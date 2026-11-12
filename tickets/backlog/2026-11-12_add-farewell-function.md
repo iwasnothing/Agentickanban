@@ -2,7 +2,7 @@
 id: 2026-11-12_add-farewell-function
 title: Add farewell function
 status: backlog
-assignee_bot: null
+assignee_bot: bot-001
 github_issue: null
 github_project_item_id: null
 priority: medium
