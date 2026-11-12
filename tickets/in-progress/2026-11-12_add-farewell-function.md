@@ -19,9 +19,9 @@ Add a farewell(name) function next to greet() in src/demo/greet.py.
 - Tests: tests/test_greet.py (unittest)
 
 # Acceptance Criteria
-- [ ] farewell("Ada") returns "Goodbye, Ada!"
-- [ ] A unittest covers farewell
-- [ ] All tests pass
+- [x] farewell("Ada") returns "Goodbye, Ada!"
+- [x] A unittest covers farewell
+- [x] All tests pass
 
 # Attachments
 - (none)
