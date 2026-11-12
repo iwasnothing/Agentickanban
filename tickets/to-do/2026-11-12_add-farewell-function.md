@@ -27,6 +27,9 @@ Add a farewell(name) function next to greet() in src/demo/greet.py.
 - (none)
 
 # Execution Log
+## Triage (superagent)
+- Assigned to bot-001: highest score 22 (hits: backend, python, tests, unittest)
+- Moved to to-do
 
 # Final Review
 - (filled when done)
