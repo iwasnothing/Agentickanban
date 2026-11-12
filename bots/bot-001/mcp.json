@@ -1,0 +1,5 @@
+{
+  "$comment": "Project-specific MCP servers this bot may use (opencode `mcp` config format). Triage treats `required` as hard requirements for tickets that list them under labels mcp/<name>.",
+  "provides": [],
+  "mcpServers": {}
+}

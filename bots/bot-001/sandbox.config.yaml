@@ -1,0 +1,54 @@
+# Sandbox + permission gate configuration for bot-001.
+# On this box there is no Docker: the sandbox is the bot's git worktree plus the
+# permission gate (enforced by the opencode tool.execute.before plugin inside
+# OpenMausBot's coding agent, and by bot_run_command / bot_run_tests).
+# deploy/docker-compose.yml describes the container version for later.
+container:
+  image: aibots/sandbox:latest      # see deploy/sandbox.Dockerfile (not used yet: no Docker on this box)
+  cpus: "2"
+  memory: 4g
+  network: egress-proxy             # optional egress proxy for network control
+  mounts:
+    workspace: /workspace           # host worktree -> /workspace (rw); everything else read-only
+
+workspace:
+  path: /workspace/aibots/workspaces/bot-001
+  branch: bots/bot-001
+
+default_test_cmd: python3 -m unittest discover -s tests -v
+command_timeout_seconds: 300
+
+permission_gate:
+  # Decision order: deny > needs_approval > allow > default.
+  # Compound commands (&&, ||, ;, |) are split and the strictest decision wins.
+  default: allow                    # allow | needs_approval | deny for commands no rule matches
+  deny:
+    - '(^|\s)rm\s+(-[a-zA-Z]*r[a-zA-Z]*f|-[a-zA-Z]*f[a-zA-Z]*r)[a-zA-Z]*\s+(/|/\*|~|\$HOME)(\s|$)'
+    - '(curl|wget)\b[^|]*\|\s*(sudo\s+)?(ba|z|da)?sh\b'
+    - '(^|[\s/>"''])\.git/'          # modifying .git/ manually
+    - '(^|\s)sudo(\s|$)'
+    - '(^|\s)(mkfs|fdisk|shutdown|reboot)(\s|$)'
+    - '(^|\s)dd\s+if='
+    - ':\(\)\s*\{'                   # fork bomb
+    - '(^|\s)git\s+push\s+.*(--force|-f)(\s|$)'
+    - 'docker\.sock'
+    - '(^|\s)(printenv|env)\s*$'     # dumping the environment (secrets)
+  needs_approval:
+    - '(^|\s)(pip3?|uv\s+pip|pipx)\s+install(\s|$)'
+    - '(^|\s)(npm|pnpm|yarn|bun)\s+(install|i|add)(\s|$)'
+    - '(^|\s)(apt|apt-get|brew)\s+install(\s|$)'
+    - '(^|\s)rm\s+-[a-zA-Z]*r'       # any recursive delete
+    - '(^|\s)git\s+(reset\s+--hard|clean\s+-[a-zA-Z]*f|push)(\s|$)'
+    - '(^|\s)(ssh|scp|nc|ncat|telnet)(\s|$)'
+  allow:
+    - '^(python3?|pytest|ls|cat|head|tail|wc|grep|rg|find|sed|awk|echo|printf|mkdir|touch|cp|mv|diff|sort|uniq|true|false|cd|pwd|test)(\s|$)'
+    - '^python3?\s+-m\s+(unittest|pytest)(\s|$)'
+    - '^(npm|pnpm|yarn)\s+(test|run\s+test|run\s+lint)(\s|$)'
+    - '^git\s+(status|diff|log|show|add|commit|branch|revert|stash)(\s|$)'
+  network:
+    allowed_hosts: [pypi.org, files.pythonhosted.org, registry.npmjs.org, localhost, 127.0.0.1]
+    unknown_host: needs_approval    # URLs to hosts not listed above
+  paths:
+    # Absolute paths outside these roots in a command need approval.
+    allowed_roots: [WORKSPACE, /tmp, /dev/null, /usr, /bin, /etc/os-release]
+    outside_roots: needs_approval

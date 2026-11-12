@@ -1,0 +1,35 @@
+# DeepSeek Superagent (manager) configuration for the Kanban bots system.
+# Paths are absolute on this box. Secrets are NEVER stored here: only env var names.
+
+paths:
+  control_repo: /workspace/ai-bot-system
+  project_repo: /workspace/aibots/project-repo
+  workspaces_root: /workspace/aibots/workspaces
+  state_dir: /workspace/ai-bot-system/.state
+
+tickets:
+  columns: [backlog, to-do, planning, in-progress, in-review, done]
+  canonical: folder            # folder location is canonical; front-matter `status` mirrors it
+  auto_commit: true            # commit tickets/ and attachments/ changes in the control repo after each mutation
+  sync_github_after_mutation: true
+
+openmausbot:
+  url: http://127.0.0.1:8799   # local OpenMausBot server (openmausbot serve --local)
+  cli: /home/box/.local/bin/openmausbot
+  default_wait_seconds: 600    # how long bot.send_prompt waits for the bot's turn to finish
+
+github:
+  # Env var names only. With no token set, sync runs in dry-run mode and logs what it would do.
+  token_env: GITHUB_TOKEN      # PAT (fine-grained: Issues RW, Projects RW, Contents RW) or a GitHub App installation token
+  repo_env: GITHUB_REPO        # owner/name
+  project_env: GITHUB_PROJECT  # Projects v2: "owner/NUMBER" (user or org) or just NUMBER (owner taken from GITHUB_REPO)
+  status_field: Status         # single-select field whose options match the 6 columns
+  bot_field: Bot               # single-select custom field (swimlanes: group by Bot)
+  priority_field: Priority     # single-select custom field
+  status_labels: true          # also add status/<column> labels
+  bot_labels: true             # also add bot/<bot-id> labels
+
+loop:
+  max_iterations_per_ticket: 3   # review -> follow-up prompt cycles before escalating to a human
+  require_tests_green: true
+  human_review_column: in-review # set to "done" to skip human approval

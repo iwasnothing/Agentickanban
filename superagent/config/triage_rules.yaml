@@ -1,0 +1,20 @@
+# Rule-based triage used by ticket_triage (and as guidance for the LLM triage prompt).
+# Score = sum of keyword hits between ticket text and each bot's skills/keywords
+#         + label boosts - workload penalty. Highest score wins; ties -> fewest open tickets.
+weights:
+  skill_keyword_hit: 3
+  label_match: 5
+  open_ticket_penalty: 1     # per ticket already in to-do/planning/in-progress for that bot
+  mcp_requirement_missing: -100
+min_score_to_assign: 0       # below this the ticket stays in backlog for a human
+default_bot: bot-001         # used when nothing scores (single-bot setups)
+after_assign_move_to: to-do  # or planning, for tickets that need decomposition
+planning_triggers:           # tickets containing these words go to planning instead
+  - epic
+  - multi-step
+  - break down
+  - architecture
+label_boosts:
+  backend: [bot-001]
+  python: [bot-001]
+  tests: [bot-001]

@@ -1,0 +1,59 @@
+// Kanban bots permission gate for OpenCode (OpenMausBot's coding engine).
+// Installed by scripts/workspace/create_worktree.sh into <worktree>/.opencode/plugins/.
+// Every shell command / file write the coding agent attempts is checked by the
+// shared Python gate (scripts/permission_gate/gate.py) BEFORE it executes:
+//   - V2 plugin API: ctx.tool.hook("execute.before") + ctx.shell.hook("create.before")
+//   - V1 plugin API: "tool.execute.before"
+// A denied or not-yet-approved command throws, so the tool call fails and the
+// model sees the reason. Decisions are audited in <control>/.state/gate-audit.jsonl.
+import { spawnSync } from "node:child_process"
+
+const PYTHON = "__PYTHON__"
+const CONTROL = "__CONTROL__"
+const BOT = "__BOT__"
+const WORKSPACE = "__WORKSPACE__"
+const WRITE_TOOLS = new Set(["write", "edit", "multiedit", "patch", "apply_patch"])
+
+function runGate(args, source) {
+  const r = spawnSync(PYTHON, ["-m", "scripts.permission_gate.gate", ...args.slice(0, 1), "--bot", BOT, "--source", source, ...args.slice(1)], {
+    cwd: CONTROL, encoding: "utf8", timeout: 15000, env: { ...process.env, AIBOTS_CONTROL_ROOT: CONTROL },
+  })
+  let decision
+  try { decision = JSON.parse((r.stdout || "").trim().split("\n").pop()) } catch { decision = null }
+  if (!decision) decision = { decision: "deny", reason: `permission gate failed: ${(r.stderr || r.error || "no output").toString().slice(0, 300)}` }
+  return decision
+}
+
+function enforce(decision) {
+  if (decision.decision === "allow") return
+  const what = decision.decision === "needs_approval" ? "NEEDS HUMAN APPROVAL" : "DENIED"
+  throw new Error(`[kanban permission gate] ${what}: ${decision.reason}${decision.rule ? ` (rule: ${decision.rule})` : ""}. Do not work around this; report it in your reply.`)
+}
+
+function checkCommand(command, cwd, source) {
+  if (!command || typeof command !== "string") return
+  enforce(runGate(["check", "--cwd", cwd || WORKSPACE, "--", command], source))
+}
+
+function checkToolInput(tool, input, source) {
+  if (!input || typeof input !== "object") return
+  const name = String(tool || "").toLowerCase()
+  if (typeof input.command === "string") checkCommand(input.command, input.workdir || input.cwd || WORKSPACE, source)
+  const p = input.filePath || input.file_path || input.path
+  if (typeof p === "string" && WRITE_TOOLS.has(name)) enforce(runGate(["check-path", "--path", p, "--write"], source))
+}
+
+export default {
+  id: "kanban-permission-gate",
+  async setup(ctx) {
+    await ctx.tool.hook("execute.before", (event) => checkToolInput(event.tool, event.input, "opencode:tool.execute.before"))
+    if (ctx.shell && typeof ctx.shell.hook === "function") {
+      await ctx.shell.hook("create.before", (event) => checkCommand(event.command, event.cwd, "opencode:shell.create.before"))
+    }
+  },
+  async server() {
+    return {
+      "tool.execute.before": async (input, output) => checkToolInput(input && input.tool, output && output.args, "opencode-v1:tool.execute.before"),
+    }
+  },
+}
