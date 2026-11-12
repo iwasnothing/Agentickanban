@@ -134,8 +134,12 @@ def bullet_list(items: list[str] | None, checkbox: bool = False, empty: str = "-
     items = [i for i in (items or []) if str(i).strip()]
     if not items:
         return empty
-    prefix = "- [ ] " if checkbox else "- "
-    return "\n".join(prefix + str(i).strip() for i in items)
+    def line(i: str) -> str:
+        i = str(i).strip()
+        if checkbox and re.match(r"^\[[ xX]\]\s", i):
+            return "- " + i  # already carries its checkbox state
+        return ("- [ ] " if checkbox else "- ") + i
+    return "\n".join(line(i) for i in items)
 
 
 def acceptance_criteria(body: str) -> list[dict]:

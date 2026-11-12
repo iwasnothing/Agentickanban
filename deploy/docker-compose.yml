@@ -1,0 +1,52 @@
+# Container layout for the Kanban bots system (for later: this box has no Docker).
+# One container per bot; each mounts only its git worktree read-write.
+# Build: docker compose -f deploy/docker-compose.yml build
+# Run:   AIBOTS_ROOT=/var/lib/aibots docker compose -f deploy/docker-compose.yml up -d
+x-bot: &bot
+  build: { context: .., dockerfile: deploy/sandbox.Dockerfile }
+  image: aibots/sandbox:latest
+  restart: unless-stopped
+  read_only: true                      # read-only root fs; only listed mounts are writable
+  tmpfs: [/tmp, /home/bot/.cache]
+  cap_drop: [ALL]
+  security_opt: [no-new-privileges:true]
+  cpus: 2
+  mem_limit: 4g
+  networks: [bots]                     # egress goes through the proxy below
+  environment:
+    HTTP_PROXY: http://egress-proxy:3128
+    HTTPS_PROXY: http://egress-proxy:3128
+    NO_PROXY: localhost,127.0.0.1
+    # secrets come from the environment / a secrets manager, never from AGENTS.md or tickets
+    OPENCODE_API_KEY: ${OPENCODE_API_KEY:-}
+  # NOTE: no /var/run/docker.sock mount, by design
+
+services:
+  bot-001:
+    <<: *bot
+    container_name: aibots-bot-001
+    volumes:
+      - ${AIBOTS_ROOT:-/var/lib/aibots}/workspaces/bot-001:/workspace:rw
+      - ${AIBOTS_ROOT:-/var/lib/aibots}/omb/bot-001:/home/bot/.openmausbot:rw
+      - ../bots/bot-001:/config:ro
+    ports: ["127.0.0.1:18801:8799"]    # OpenMausBot API for bot-001 (registry: openmausbot url)
+
+  # bot-002:
+  #   <<: *bot
+  #   container_name: aibots-bot-002
+  #   volumes:
+  #     - ${AIBOTS_ROOT:-/var/lib/aibots}/workspaces/bot-002:/workspace:rw
+  #     - ${AIBOTS_ROOT:-/var/lib/aibots}/omb/bot-002:/home/bot/.openmausbot:rw
+  #     - ../bots/bot-002:/config:ro
+  #   ports: ["127.0.0.1:18802:8799"]
+
+  egress-proxy:
+    image: ubuntu/squid:latest
+    restart: unless-stopped
+    networks: [bots, egress]
+    volumes:
+      - ./squid-allowlist.conf:/etc/squid/conf.d/allowlist.conf:ro
+
+networks:
+  bots: { internal: true }             # bots cannot reach the internet directly
+  egress: {}
