@@ -29,6 +29,9 @@ In the bot-001 worktree (/workspace/aibots/workspaces/bot-001, branch bots/bot-0
 - (none)
 
 # Execution Log
+## Triage (superagent)
+- Assigned to bot-001: highest score 25 (hits: api, backend, python, tests, unittest)
+- Moved to to-do
 
 # Final Review
 - (filled when done)
