@@ -19,10 +19,13 @@ openmausbot:
   default_wait_seconds: 600    # how long bot.send_prompt waits for the bot's turn to finish
 
 github:
-  # Env var names only. With no token set, sync runs in dry-run mode and logs what it would do.
+  # Non-secret targets may live here. The token itself is NEVER stored in git.
+  # With no token set, sync runs in dry-run mode and logs what it would do.
+  repo: iwasnothing/Agentickanban
+  # project: iwasnothing/N     # set after a Projects v2 board named "Agentic Kanban" exists
   token_env: GITHUB_TOKEN      # PAT (fine-grained: Issues RW, Projects RW, Contents RW) or a GitHub App installation token
-  repo_env: GITHUB_REPO        # owner/name
-  project_env: GITHUB_PROJECT  # Projects v2: "owner/NUMBER" (user or org) or just NUMBER (owner taken from GITHUB_REPO)
+  repo_env: GITHUB_REPO        # optional override of github.repo
+  project_env: GITHUB_PROJECT  # optional override of github.project; "owner/NUMBER" or NUMBER
   status_field: Status         # single-select field whose options match the 6 columns
   bot_field: Bot               # single-select custom field (swimlanes: group by Bot)
   priority_field: Priority     # single-select custom field

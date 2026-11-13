@@ -82,8 +82,10 @@ Approve a command that needs approval: `bin/gate approve --bot bot-001 -- "pip i
 
 ## GitHub sync
 
+The target repository is [iwasnothing/Agentickanban](https://github.com/iwasnothing/Agentickanban) (also set in `superagent/config/superagent.yaml` as `github.repo`).
+
 `scripts/ticket_sync/github_sync.py` uses the REST API for Issues and GraphQL for Projects v2.
-- Settings come from env vars: `GITHUB_TOKEN` (a fine-grained PAT or a GitHub App installation token with Issues RW, Projects RW, and Contents RW),
+- Settings come from `github.repo` / `github.project` in `superagent.yaml`, overridable by env vars: `GITHUB_TOKEN` (a fine-grained PAT or a GitHub App installation token with Issues RW, Projects RW, and Contents RW),
   `GITHUB_REPO=owner/name`, and `GITHUB_PROJECT=owner/NUMBER` (or just `NUMBER`).
 - Issue mapping: title → issue title, sections → issue body, and labels plus `status/<col>`, `bot/<id>`, `priority/<p>`. Moving a ticket to done closes the issue.
   The issue number is written back to the front-matter.
@@ -136,9 +138,8 @@ again with `OPENROUTER_API_KEY` in the environment (see `/workspace/dsh-logs/run
 - Done and tested: the ticket store and CLI, rule-based triage, both MCP servers (registered in DSH and running), worktrees, the
   permission gate (verified inside a real OpenMausBot turn), per-turn commits, GitHub sync in dry-run mode (live mode is unit-tested against a fake GitHub
   API), and the e2e smoke run.
-- **GitHub:** needs `GITHUB_TOKEN`, `GITHUB_REPO`, and `GITHUB_PROJECT`, plus a project with Status, Bot, and Priority fields. No GitHub account exists yet, and nothing
-  has been sent to GitHub.
-- **Push:** the project repo has no remote, so `commit_push_turn.sh` commits but skips the push. Add a remote and pushes start automatically.
+- **GitHub:** `github.repo` is `iwasnothing/Agentickanban`. Creating Issues, labels, a Projects v2 board, and pushing `main` all need write access that the current Cursor GitHub App connection does not grant (`403 Resource not accessible by integration` on issue and label creates). Reads of the empty repo succeed. `github.project` is unset until a board can be created. Live `github_sync.py` still needs `GITHUB_TOKEN` (or `gh` auth) on this box with Issues, Projects, and Contents write.
+- **Push:** origin is `https://github.com/iwasnothing/Agentickanban.git`. This box has no git/gh credentials, so `main` has not been pushed. A bundle is at `/workspace/ai-bot-system-main.bundle` for a machine that can push.
 - **Containers:** `deploy/` is written but unused (no Docker here). Running one OpenMausBot per container would also need
   `openmausbot_url` per bot in the registry. Today every bot shares the one local OpenMausBot server.
 - **Live superagent loop:** DSH has the tools, but its model (OpenRouter's free Gemma) is rate-limited, so the manager loop has only

@@ -5,6 +5,26 @@
 #         with .opencode/plugins/kanban-permission-gate.js (tool.execute.before gate) installed.
 #         .ticket/ and .opencode/ are excluded from commits via the repo's info/exclude.
 set -euo pipefail
+
+# If GIT_CONFIG_COUNT is set without matching GIT_CONFIG_KEY_* (MCP/stdio
+# spawners often strip names containing KEY), git exits with
+# "missing config key GIT_CONFIG_KEY_0". Drop the incomplete override.
+if [ -n "${GIT_CONFIG_COUNT:-}" ]; then
+  missing=0
+  i=0
+  while [ "$i" -lt "${GIT_CONFIG_COUNT}" ]; do
+    eval "k=\${GIT_CONFIG_KEY_${i}:-}"
+    [ -n "$k" ] || missing=1
+    i=$((i+1))
+  done
+  if [ "$missing" -eq 1 ]; then
+    unset GIT_CONFIG_COUNT
+    for i in 0 1 2 3 4 5 6 7 8 9; do
+      unset GIT_CONFIG_KEY_$i GIT_CONFIG_VALUE_$i
+    done
+  fi
+fi
+
 BOT_ID="${1:?usage: create_worktree.sh <bot-id> [project-repo] [workspaces-root]}"
 [[ "$BOT_ID" =~ ^[A-Za-z0-9][A-Za-z0-9_-]*$ ]] || { echo "invalid bot id: $BOT_ID" >&2; exit 2; }
 CONTROL="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"

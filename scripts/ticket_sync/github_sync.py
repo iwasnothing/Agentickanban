@@ -72,8 +72,8 @@ class GitHubSync:
         s = store.s
         gh = s.github
         self.token = token if token is not None else os.environ.get(gh.get("token_env", "GITHUB_TOKEN"), "")
-        self.repo = repo if repo is not None else os.environ.get(gh.get("repo_env", "GITHUB_REPO"), "")
-        self.project = project if project is not None else os.environ.get(gh.get("project_env", "GITHUB_PROJECT"), "")
+        self.repo = repo if repo is not None else (os.environ.get(gh.get("repo_env", "GITHUB_REPO"), "") or gh.get("repo", "") or "")
+        self.project = project if project is not None else (os.environ.get(gh.get("project_env", "GITHUB_PROJECT"), "") or gh.get("project", "") or "")
         self.status_field = gh.get("status_field", "Status")
         self.bot_field = gh.get("bot_field", "Bot")
         self.priority_field = gh.get("priority_field", "Priority")
