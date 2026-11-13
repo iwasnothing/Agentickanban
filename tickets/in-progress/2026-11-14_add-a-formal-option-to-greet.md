@@ -33,5 +33,33 @@ In the bot-001 worktree (/workspace/aibots/workspaces/bot-001, branch bots/bot-0
 - Assigned to bot-001: highest score 25 (hits: api, backend, python, tests, unittest)
 - Moved to to-do
 
+## Session started (bot-001)
+- Session 9df910fd-3aef-4090-8dc1-3f039f2fdcb6 on branch bots/bot-001 at 2026-11-14 00:25
+- Attachments copied: none
+
+## Turn 1 (bot-001)
+- Prompt sent at 2026-11-14 00:25 (session 9df910fd-3aef-4090-8dc1-3f039f2fdcb6)
+- Prompt: Show me the VM test results and the final committed files.
+
+## Turn 1 result (bot-001)
+- Status: done at 2026-11-14 00:26
+- Bot reply: **Done.** All acceptance criteria met.  **VM test results (8 tests, all OK):** - `test_greet` — "Hello, Ada!" - `test_greet_shout` — "HELLO, ADA!" - `test_greet_shout_defaults_false` — "Hello, Ada!" - `test_farewell` — "Goodbye, Ada!" - `test_greet_formal` — "Good day, Ada." - `test_greet_formal_sho
+
 # Final Review
-- (filled when done)
+All acceptance criteria met. Implementation and tests ran on the Simular box remote VM using OpenMausBot's `box` MCP tools (box_ensure, shell, write_file, read_file).
+
+**VM test results (8 tests, all OK):**
+- test_greet — "Hello, Ada!"
+- test_greet_shout — "HELLO, ADA!"
+- test_greet_shout_defaults_false — "Hello, Ada!"
+- test_farewell — "Goodbye, Ada!"
+- test_greet_formal — "Good day, Ada."
+- test_greet_formal_shout — "GOOD DAY, ADA."
+- test_greet_formal_defaults_false — "Hello, Ada!"
+- test_greet_formal_shout_defaults_false — "Good day, Ada."
+
+**Files committed on branch bots/bot-001 (commit 765cbee):**
+- src/demo/greet.py — added formal: bool = False parameter; formal greeting uses "Good day, {name}." (period), and shout uppercases it
+- tests/test_greet.py — added 4 new tests covering formal, formal+shout, and default behaviors
+
+The existing shout and farewell behavior is unchanged. The leftover times-option stash was not popped.
