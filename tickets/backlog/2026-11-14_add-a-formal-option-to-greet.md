@@ -2,7 +2,7 @@
 id: 2026-11-14_add-a-formal-option-to-greet
 title: Add a formal option to greet
 status: backlog
-assignee_bot: null
+assignee_bot: bot-001
 github_issue: 4
 github_project_item_id: PVTI_lAHOAlPnVM4BrZECzhIfwLI
 priority: medium
