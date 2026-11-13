@@ -22,7 +22,7 @@ github:
   # Non-secret targets may live here. The token itself is NEVER stored in git.
   # With no token set, sync runs in dry-run mode and logs what it would do.
   repo: iwasnothing/Agentickanban
-  # project: iwasnothing/N     # set after a Projects v2 board named "Agentic Kanban" exists
+  project: iwasnothing/2
   token_env: GITHUB_TOKEN      # PAT (fine-grained: Issues RW, Projects RW, Contents RW) or a GitHub App installation token
   repo_env: GITHUB_REPO        # optional override of github.repo
   project_env: GITHUB_PROJECT  # optional override of github.project; "owner/NUMBER" or NUMBER

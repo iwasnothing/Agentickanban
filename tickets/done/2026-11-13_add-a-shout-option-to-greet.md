@@ -3,8 +3,8 @@ id: 2026-11-13_add-a-shout-option-to-greet
 title: Add a shout option to greet
 status: done
 assignee_bot: bot-001
-github_issue: null
-github_project_item_id: null
+github_issue: 2
+github_project_item_id: PVTI_lAHOAlPnVM4BrZECzhIU79k
 priority: medium
 labels: [python, backend]
 created_at: '2026-11-13'

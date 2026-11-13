@@ -3,8 +3,8 @@ id: 2026-11-12_add-farewell-function
 title: Add farewell function
 status: done
 assignee_bot: bot-001
-github_issue: null
-github_project_item_id: null
+github_issue: 1
+github_project_item_id: PVTI_lAHOAlPnVM4BrZECzhIU714
 priority: medium
 labels: [python, backend]
 created_at: '2026-11-12'
