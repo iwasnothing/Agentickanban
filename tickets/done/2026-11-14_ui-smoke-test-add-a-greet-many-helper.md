@@ -1,7 +1,7 @@
 ---
 id: 2026-11-14_ui-smoke-test-add-a-greet-many-helper
 title: 'UI smoke test: add a greet_many helper'
-status: in-review
+status: done
 assignee_bot: bot-001
 github_issue: 5
 github_project_item_id: PVTI_lAHOAlPnVM4BrZECzhInbE8
