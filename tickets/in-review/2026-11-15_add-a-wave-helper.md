@@ -1,7 +1,7 @@
 ---
 id: 2026-11-15_add-a-wave-helper
 title: Add a wave helper
-status: in-progress
+status: in-review
 assignee_bot: bot-001
 github_issue: 6
 github_project_item_id: PVTI_lAHOAlPnVM4BrZECzhI2pe0
