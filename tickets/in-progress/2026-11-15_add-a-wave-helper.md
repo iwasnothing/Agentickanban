@@ -31,5 +31,21 @@ In the bot-001 worktree (/workspace/aibots/workspaces/bot-001, branch bots/bot-0
 - Assigned to bot-001: highest score 22 (hits: backend, python, tests, unittest)
 - Moved to to-do
 
+## Session started (bot-001)
+- Session 63488649-e13a-4852-b9d6-2a83adaf782d on branch bots/bot-001 at 2026-11-15 17:26
+- Attachments copied: none
+
+## Turn 1 (bot-001)
+- Prompt sent at 2026-11-15 17:26 (session 63488649-e13a-4852-b9d6-2a83adaf782d)
+- Prompt: In the bot-001 worktree (/workspace/aibots/workspaces/bot-001, branch bots/bot-001), add wave(name) in src/demo/greet.py that returns "Wave, {name}!". Do not change existing greet(), farewell(), or gr
+
+## Turn 1 result (bot-001)
+- Status: done at 2026-11-15 17:29
+- Bot reply: **Done.** All acceptance criteria met.  **Files changed:** - `src/demo/greet.py` — added `wave(name: str) -> str` function returning `"Wave, {name}!"` - `tests/test_greet.py` — added `test_wave` and `test_wave_different_names` unittest coverage  **Tests run + result:** - 12 tests passed on the Simul
+
+## Turn 1 Review (superagent)
+- Reviewed at 2026-11-15 17:30
+- Implementation complete. Bot-001 added `wave(name)` function to `src/demo/greet.py` returning `\"Wave, {name}!\"` and added unittest coverage (`test_wave`, `test_wave_different_names`) in `tests/test_greet.py`. All 12 tests pass on the Simular box VM (cb-00a9be6c1672) and locally. Existing greet(), farewell(), greet_many() behavior unchanged. Committed as 1b012a4.
+
 # Final Review
 - (filled when done)
