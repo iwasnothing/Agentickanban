@@ -38,6 +38,9 @@ Leave acceptance checkboxes unchecked; they are human-in-the-loop.
 - (none)
 
 # Execution Log
+## Triage (superagent)
+- Assigned to bot-001: highest score 0 (hits: none)
+- Moved to to-do
 
 # Final Review
 - (filled when done)
