@@ -2,7 +2,7 @@
 id: 2026-11-15_hong-kong-district-residential-price-per-sqft-ch
 title: Hong Kong district residential price-per-sqft change, last 2 years
 status: backlog
-assignee_bot: null
+assignee_bot: bot-001
 github_issue: 7
 github_project_item_id: PVTI_lAHOAlPnVM4BrZECzhI4egg
 priority: medium
