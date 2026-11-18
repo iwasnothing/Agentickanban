@@ -48,6 +48,17 @@ Collect public Hong Kong residential transaction data from the Land Registry EPR
 - (none)
 
 # Execution Log
+## Turn 1 Review (superagent)
+- Reviewed at 2026-11-19 00:57
+- ## Expansion Log (Superagent)
+- **High-level prompt received:** Search public Hong Kong residential sales figures, compute price-per-square-foot change by district over the last two years, sort the districts from the highest rise to the highest drop, and visualize the ranking in bar charts.
+- **Ticket fields drafted by Superagent:**
+- **Title:** HK Residential Sales: Price-per-sq-ft Change by District (Last 2 Years) with Bar Chart Visualization
+- **Objective:** Collect public Hong Kong residential transaction data from the Land Registry EPRC, compute the year-over-year price-per-square-foot change for each district over the most recent 24 months available, rank districts from highest increase to largest decrease, and produce horizontal bar charts visualizing the ranking.
+- **Requirements:** 9 specific, testable requirements covering data fetching (HK Land Registry EPRC), parsing/cleaning, price-per-sq-ft computation, district-level monthly median aggregation, 24-month percentage change calculation, ranking, horizontal bar chart generation with green/red color coding, PNG and CSV export, and reproducible Python code.
+- **Context:** Includes source (HK Land Registry EPRC open data), time window (most recent 24 months as of 2026-11-19), 18 standard HK districts, visualization specs (horizontal bar chart, sorted, colored), output files (chart.png >=1920x1080, ranked_districts.csv).
+- **Acceptance Criteria:** 8 unchecked checkboxes covering each major step from data fetch through chart/CSV export.
+- **Intended assignee:** bot-001 (MausBot) — implementation/analysis task requiring Python data processing and visualization.
 
 # Final Review
 - (filled when done)
