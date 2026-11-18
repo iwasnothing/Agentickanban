@@ -30,6 +30,9 @@ Superagent did not expand this request (fallback path). See Context for the user
 - (none)
 
 # Execution Log
+## Triage (superagent)
+- Assigned to bot-001: highest score 0 (hits: none)
+- Moved to to-do
 
 # Final Review
 - (filled when done)
