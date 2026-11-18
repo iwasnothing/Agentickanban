@@ -1,7 +1,7 @@
 ---
 id: 2026-11-19_hk-residential-sales-price-per-sq-ft-change-by-d
 title: 'HK Residential Sales: Price-per-sq-ft Change by District (Last 2 Years) with Bar Chart Visualization'
-status: backlog
+status: to-do
 assignee_bot: bot-001
 github_issue: 9
 github_project_item_id: PVTI_lAHOAlPnVM4BrZECzhJ5j04
