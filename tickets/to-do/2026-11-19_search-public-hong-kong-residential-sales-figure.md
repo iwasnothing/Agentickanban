@@ -34,5 +34,9 @@ Superagent did not expand this request (fallback path). See Context for the user
 - Assigned to bot-001: highest score 0 (hits: none)
 - Moved to to-do
 
+## Turn 1 Review (superagent)
+- Reviewed at 2026-11-19 00:56
+- This ticket was created by the web UI fallback after Superagent could not authenticate to DSH (stale UI token after a Superagent restart). Objective/requirements/acceptance criteria were not expanded. Do not implement from this stub; a later Superagent-expanded ticket will supersede it. Official acceptance criteria remain unchecked.
+
 # Final Review
 - (filled when done)
