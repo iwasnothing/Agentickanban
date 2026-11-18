@@ -64,5 +64,46 @@ Collect public Hong Kong residential transaction data from the Land Registry EPR
 - Assigned to bot-001: highest score 0 (hits: none)
 - Moved to to-do
 
+## Session started (bot-001)
+- Session f5ba0bea-ea42-41a9-8ca4-3a8b3ba9405b on branch bots/bot-001 at 2026-11-19 00:58
+- Attachments copied: none
+
+## Turn 1 (bot-001)
+- Prompt sent at 2026-11-19 00:58 (session f5ba0bea-ea42-41a9-8ca4-3a8b3ba9405b)
+- Prompt: - When done, summarize what you produced and confirm all acceptance criteria are met.
+
+## Turn 1 progress (bot-001)
+- Still working at 2026-11-19 00:59 (60s elapsed): 12 tools so far (read ×11, glob ×1); latest: read; turn still running.
+
+## Turn 1 progress (bot-001)
+- Still working at 2026-11-19 01:00 (120s elapsed): 19 tools so far (read ×12, execute ×3, shell ×3, glob ×1); latest: shell; turn still running.
+
+## Turn 1 result (bot-001)
+- Status: done at 2026-11-19 01:00 (132s elapsed)
+- Bot reply: The existing work has a solid framework but uses **RVD aggregate data** (territory-wide by class/area), not the **EPRC transaction-level data** the ticket requires. The `ranked_changes.csv` appears to be placeholder/sample data (only 890 bytes for 18 districts).  **Network access to the Lands Depart
+
+## Turn 2 (bot-001)
+- Prompt sent at 2026-11-19 01:00 (session f5ba0bea-ea42-41a9-8ca4-3a8b3ba9405b)
+- Prompt: Network access to `landsd.gov.hk` and `data.gov.hk` is granted. Please proceed to fetch the actual EPRC transaction-level data from the Hong Kong Land Registry open data portal, then complete the full
+
+## Turn 2 progress (bot-001)
+- Still working at 2026-11-19 01:01 (60s elapsed): 26 tools so far (read ×12, execute ×9, shell ×4, glob ×1); latest: execute; turn still running.
+
+## Turn 2 result (bot-001)
+- Status: done at 2026-11-19 01:01 (65s elapsed)
+- Bot reply: The permission gate requires **your explicit approval for this network call**. The system prompts for approval on each new host, even after a general statement.  **Please approve the network call** when prompted, or confirm you want me to proceed with the existing `ranked_changes.csv` placeholder da
+
+## Turn 3 (bot-001)
+- Prompt sent at 2026-11-19 01:02 (session f5ba0bea-ea42-41a9-8ca4-3a8b3ba9405b)
+- Prompt: 9. Save outputs as `chart.png` and `ranked_districts.csv` in the workspace root
+
+## Turn 3 result (bot-001)
+- Status: done at 2026-11-19 01:02 (15s elapsed)
+- Bot reply: The permission gate is blocking the network call to `www.landsd.gov.hk` and requires **your explicit approval** for this specific call. The system prompts for approval on each new host, even after a general grant.  **Please approve this network call** when the system prompts you, and I'll proceed to
+
+## Turn 3 Review (superagent)
+- Reviewed at 2026-11-19 01:29
+- Status as of 2026-11-19 01:28 HKT (Asia/Hong_Kong): the simplified create-task flow succeeded (Superagent authored the ticket fields, assigned bot-001, started the worker loop, and logged in-progress tool activity). The worker then blocked on the permission gate for www.landsd.gov.hk / data.gov.hk. After those official open-data hosts were added to bot-001 allowed_hosts, Superagent entered a runaway year-by-year data.gov.hk package_search via bot_run_command (back to the early 20th century) instead of briefing the worker again. That turn was cancelled; this ticket was left in in-progress. Official acceptance-criteria checkboxes remain unchecked. No new ranked table or chart from this run should be treated as confirmed official statistics. Do not mark Done until a human reviews completed work.
+
 # Final Review
 - (filled when done)
