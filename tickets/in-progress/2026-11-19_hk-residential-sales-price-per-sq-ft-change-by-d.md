@@ -105,5 +105,9 @@ Collect public Hong Kong residential transaction data from the Land Registry EPR
 - Reviewed at 2026-11-19 01:29
 - Status as of 2026-11-19 01:28 HKT (Asia/Hong_Kong): the simplified create-task flow succeeded (Superagent authored the ticket fields, assigned bot-001, started the worker loop, and logged in-progress tool activity). The worker then blocked on the permission gate for www.landsd.gov.hk / data.gov.hk. After those official open-data hosts were added to bot-001 allowed_hosts, Superagent entered a runaway year-by-year data.gov.hk package_search via bot_run_command (back to the early 20th century) instead of briefing the worker again. That turn was cancelled; this ticket was left in in-progress. Official acceptance-criteria checkboxes remain unchecked. No new ranked table or chart from this run should be treated as confirmed official statistics. Do not mark Done until a human reviews completed work.
 
+## Turn 3 Review (superagent)
+- Reviewed at 2026-11-19 01:32
+- Resuming ticket. The permission gate now allows official open-data hosts (data.gov.hk, landsd.gov.hk, rvd.gov.hk) on bot-001. I will send ONE worker brief to fetch public Hong Kong residential figures for the most recent two years only, compute price-per-square-foot change by district, sort from highest rise to highest drop, and write bar-chart PNG(s) plus a ranked CSV. I will not search datasets or implement the analysis myself.
+
 # Final Review
 - (filled when done)
