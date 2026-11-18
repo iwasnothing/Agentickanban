@@ -60,5 +60,9 @@ Collect public Hong Kong residential transaction data from the Land Registry EPR
 - **Acceptance Criteria:** 8 unchecked checkboxes covering each major step from data fetch through chart/CSV export.
 - **Intended assignee:** bot-001 (MausBot) — implementation/analysis task requiring Python data processing and visualization.
 
+## Triage (superagent)
+- Assigned to bot-001: highest score 0 (hits: none)
+- Moved to to-do
+
 # Final Review
 - (filled when done)
