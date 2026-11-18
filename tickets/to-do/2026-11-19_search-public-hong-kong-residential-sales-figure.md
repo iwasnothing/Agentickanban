@@ -1,7 +1,7 @@
 ---
 id: 2026-11-19_search-public-hong-kong-residential-sales-figure
 title: Search public Hong Kong residential sales figures, compute price-per-square-foot change by district over the last two
-status: backlog
+status: to-do
 assignee_bot: bot-001
 github_issue: 8
 github_project_item_id: PVTI_lAHOAlPnVM4BrZECzhJ5fY4
