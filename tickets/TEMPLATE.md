@@ -14,6 +14,9 @@ updated_at: 2026-11-07
 # Objective
 What should be achieved, in one or two sentences.
 
+# Requirements
+- Specific, testable requirements
+
 # Context
 - Relevant files, modules, links
 
