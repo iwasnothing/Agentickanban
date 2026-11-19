@@ -70,5 +70,9 @@ Collect public Hong Kong residential transaction data from the Land Registry, co
 - **Initial status:** backlog
 - **Intended assignee:** bot-001 (MausBot) — implementation/analysis task requiring data fetching, computation, and visualization.
 
+## Triage (superagent)
+- Assigned to bot-001: highest score 0 (hits: none)
+- Moved to to-do
+
 # Final Review
 - (filled when done)
