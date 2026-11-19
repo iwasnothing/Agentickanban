@@ -63,5 +63,9 @@ Collect public Hong Kong residential sales transaction data, compute year-over-y
 - **Labels:** data-analysis, hong-kong, real-estate, visualization, public-data
 - **Intended assignee:** bot-001 (MausBot) — implementation/analysis task requiring web research, data processing, and visualization.
 
+## Triage (superagent)
+- Assigned to bot-001: highest score 3 (hits: api)
+- Moved to to-do
+
 # Final Review
 - (filled when done)
