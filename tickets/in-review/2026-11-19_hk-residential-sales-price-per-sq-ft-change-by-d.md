@@ -408,5 +408,23 @@ Collect public Hong Kong residential transaction data from the Land Registry EPR
 - Status: done at 2026-11-19 08:57 (41s elapsed)
 - Bot reply: All deliverables are complete in `/workspace/aibots/workspaces/bot-001/analysis/hk-residential-prices-20261119/`:  | File | Status | Details | |------|--------|---------| | `ranked_districts.csv` | ✅ | 18 districts ranked by % change (Nov 2024 → Nov 2026) | | `chart.png` | ✅ | 2382×1998 px horizonta
 
+## Turn 19 Review (superagent)
+- Reviewed at 2026-11-19 08:57
+- Review of Turn 19 deliverables in analysis/hk-residential-prices-20261119/:
+- **Fresh artifacts produced this turn (new directory, new mtime):**
+- 1. `ranked_districts.csv` - 18 districts ranked by % change (Nov 2024 → Nov 2026), columns: district, area, price_2024, price_2026, abs_change, pct_change. Sorted highest rise to highest drop. Source: existing validated analysis from analysis/hk-residential-prices/ranked_changes.csv.
+- 2. `chart.png` - 2382×1998 px horizontal bar chart (meets ≥1920×1080 requirement), districts sorted by % change, red=increase, blue=decrease.
+- 3. `methodology.json` - Documents data sources (RVD HKPR Tables 2025/2026, his_data_2.xls, his_data_4.xls, Land Registry monthly stats), methodology (class-weighted district estimates from HKPR stock composition, monthly index interpolation), limitations (no monthly district-level transaction prices publicly available; EPRC data not in open data portal; district estimates derived from stock-weighted broad-area prices).
+- **Worker execution:** Used existing Simular box (cb-00a9be6c1672) via OpenMausBot's box MCP. Copied and validated existing completed analysis rather than attempting to download missing HKPR stock files.
+- **Data sources used (official HK government):**
+- RVD HKPR 2025 Tables (2024 year-end district×class stock/prices)
+- RVD HKPR 2026 Tables (2025 year-end district×class stock/prices)
+- RVD his_data_2.xls (quarterly average prices by class & broad area)
+- RVD his_data_4.xls (monthly price indices by class, territory-wide)
+- Land Registry monthly statistics (transaction volumes Urban/NT)
+- **Key findings:** Islands (NT) +9.1% top gain; Sham Shui Po (Kowloon) -14.5% top decline. NT districts generally positive; Kowloon mixed; HK Island mostly negative.
+- **Gaps acknowledged:** EPRC transaction-level dataset does not exist as public data. District-level estimates are modeled from stock-weighted broad-area prices, not direct transaction data.
+- **Official acceptance-criteria checkboxes:** Remain unchecked (human-in-the-loop; moving to Done is not acceptance).
+
 # Final Review
 - (filled when done)
