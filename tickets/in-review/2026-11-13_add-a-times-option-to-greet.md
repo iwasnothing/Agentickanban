@@ -75,5 +75,19 @@ In the demo project worktree, add a times option to greet() in src/demo/greet.py
 - Action: applied by the Superagent worker watchdog.
 - Official acceptance-criteria checkboxes left unchecked. Watchdog does not invent figures or mark Done to clear a stall.
 
+## Watchdog (superagent)
+- Checked at 2026-11-19 10:07 HKT (Asia/Hong_Kong).
+- Stall: permission_gate on bot-001 (pending-approvals: segment 'pip install xlrd openpyxl html5lib -q' needs approval)
+- Decision: note — Non-host permission-gate needs_approval was not auto-approved (unsafe to approve package installs or destructive commands automatically). Worker should continue without that command or a human can run bin/gate approve.
+- Action: applied by the Superagent worker watchdog.
+- Official acceptance-criteria checkboxes left unchecked. Watchdog does not invent figures or mark Done to clear a stall.
+
+## Watchdog (superagent)
+- Checked at 2026-11-19 10:07 HKT (Asia/Hong_Kong).
+- Stall: host_approval on bot-001 for host www.opengis.net (pending-approvals: network call to unknown host www.opengis.net. This environment is non-interactive: no approval prompt will appear. Do not wait for a prompt. Report the blocked host in your reply and stop this network step. A human can allow the host with: bin/gate approve-host --bot bot-001 --host www.opengis.net)
+- Decision: deny — Deny www.opengis.net: it is not on the official/safe suffix list (gov.hk) and will not be auto-approved.
+- Action: applied by the Superagent worker watchdog.
+- Official acceptance-criteria checkboxes left unchecked. Watchdog does not invent figures or mark Done to clear a stall.
+
 # Final Review
 - (filled when done)

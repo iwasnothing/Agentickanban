@@ -189,5 +189,9 @@ Collect public Hong Kong residential transaction data from the Land Registry, co
 - ✅ Execution log shows data freshness (Sep 2026) and coverage notes
 - **Verdict**: The work is technically well-executed given the **fundamental data availability constraint**. The ticket asked for 18 District Council districts, but the official open data only provides Urban/NT/All regional aggregates. The bot clearly documents this limitation and delivers a complete analysis on the available data proxy.
 
+## Turn 3 (bot-001)
+- Prompt sent at 2026-11-19 10:07 (session b7453ec7-9037-4284-8038-545500cfd463)
+- Prompt: Host www.opengis.net was NOT approved by Superagent's watchdog (Deny www.opengis.net: it is not on the official/safe suffix list (gov.hk) and will not be auto-approved.). Do not try to work around the
+
 # Final Review
 - (filled when done)
