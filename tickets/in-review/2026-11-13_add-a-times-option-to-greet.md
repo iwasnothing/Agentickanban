@@ -8,7 +8,7 @@ github_project_item_id: PVTI_lAHOAlPnVM4BrZECzhIWsus
 priority: medium
 labels: [python, backend]
 created_at: '2026-11-13'
-updated_at: '2026-11-13'
+updated_at: '2026-11-19'
 ---
 
 # Objective
@@ -53,6 +53,27 @@ In the demo project worktree, add a times option to greet() in src/demo/greet.py
 - ⚠ finished files NOT committed in bot-001 worktree due to git config corruption (GIT_CONFIG_KEY_0 error)
 - **Simular Box VM:** Could not use MausBot/OpenMausBot to run on the Simular box VM because all available models hit usage limits or require unconfigured API keys. Implementation and tests were done directly on the worktree via kanban-bots MCP tools.
 - **Blocker:** Git config in worktree is corrupted (missing config key GIT_CONFIG_KEY_0), preventing git commit. The worktree files are correctly updated and tested.
+
+## Watchdog (superagent)
+- Checked at 2026-11-19 08:58 HKT (Asia/Hong_Kong).
+- Stall: permission_gate on bot-001 (pending-approvals: segment 'pip install python-calamine -q' needs approval)
+- Decision: note — Non-host permission-gate needs_approval was not auto-approved (unsafe to approve package installs or destructive commands automatically). Worker should continue without that command or a human can run bin/gate approve.
+- Action: applied by the Superagent worker watchdog.
+- Official acceptance-criteria checkboxes left unchecked. Watchdog does not invent figures or mark Done to clear a stall.
+
+## Watchdog (superagent)
+- Checked at 2026-11-19 09:09 HKT (Asia/Hong_Kong).
+- Stall: permission_gate on bot-001 (pending-approvals: segment 'pip install python-calamine -q' needs approval)
+- Decision: note — Non-host permission-gate needs_approval was not auto-approved (unsafe to approve package installs or destructive commands automatically). Worker should continue without that command or a human can run bin/gate approve.
+- Action: applied by the Superagent worker watchdog.
+- Official acceptance-criteria checkboxes left unchecked. Watchdog does not invent figures or mark Done to clear a stall.
+
+## Watchdog (superagent)
+- Checked at 2026-11-19 09:19 HKT (Asia/Hong_Kong).
+- Stall: permission_gate on bot-001 (pending-approvals: path /home/user is outside the allowed roots)
+- Decision: note — Non-host permission-gate needs_approval was not auto-approved (unsafe to approve package installs or destructive commands automatically). Worker should continue without that command or a human can run bin/gate approve.
+- Action: applied by the Superagent worker watchdog.
+- Official acceptance-criteria checkboxes left unchecked. Watchdog does not invent figures or mark Done to clear a stall.
 
 # Final Review
 - (filled when done)
