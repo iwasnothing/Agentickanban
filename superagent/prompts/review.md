@@ -11,3 +11,8 @@ Review turn {turn} of bot `{bot_id}` on ticket `{ticket_id}` (session `{session_
 6. If approve: `bot_commit_turn` (message `bot({bot_id}): turn {turn} for ticket {ticket_id}`),
    then `ticket_move` to in-review or done.
    If request changes: `bot_send_prompt` with only the gaps, then review again.
+
+Never tell the worker that a command, host, or package install "has been
+approved" unless the permission gate actually approved it. A watchdog note,
+reject, or deny is not an approval. Do not invent an approval to clear a stall.
+

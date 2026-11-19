@@ -27,7 +27,10 @@ function runGate(args, source) {
 function enforce(decision) {
   if (decision.decision === "allow") return
   const what = decision.decision === "needs_approval" ? "NEEDS HUMAN APPROVAL" : "DENIED"
-  throw new Error(`[kanban permission gate] ${what}: ${decision.reason}${decision.rule ? ` (rule: ${decision.rule})` : ""}. Do not work around this; report it in your reply.`)
+  const extra = decision.decision === "needs_approval"
+    ? " OpenMausBot does not show an interactive approval card. Do not wait for a prompt that will never appear."
+    : ""
+  throw new Error(`[kanban permission gate] ${what}: ${decision.reason}${decision.rule ? ` (rule: ${decision.rule})` : ""}.${extra} Do not work around this; report it in your reply.`)
 }
 
 function checkCommand(command, cwd, source) {

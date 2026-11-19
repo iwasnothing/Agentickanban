@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# Superagent worker watchdog: watchdog once [--bot BOT] [--no-apply] | watchdog loop [--interval N]
+ROOT="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/.." && pwd)"
+cd "$ROOT" && exec "$ROOT/.venv/bin/python" -m scripts.bots.watchdog "$@"

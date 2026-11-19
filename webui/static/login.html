@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Agentic Kanban · Sign in</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;background:linear-gradient(135deg,#f4f5f7 0%,#e9f2ff 100%);color:#172b4d;min-height:100vh;display:flex;align-items:center;justify-content:center}
+.card{background:#fff;width:380px;max-width:92vw;border-radius:8px;box-shadow:0 8px 24px rgba(9,30,66,.15),0 0 1px rgba(9,30,66,.31);padding:40px 36px}
+.logo{display:flex;align-items:center;gap:10px;justify-content:center;margin-bottom:24px}
+.mark{width:36px;height:36px;border-radius:8px;background:linear-gradient(135deg,#0052cc,#2684ff);display:grid;place-items:center;color:#fff;font-weight:800;font-size:16px}
+.brand{font-size:22px;font-weight:700;letter-spacing:-.2px}
+h1{font-size:16px;text-align:center;margin:0 0 6px;font-weight:600}
+p.sub{text-align:center;color:#5e6c84;font-size:13px;margin:0 0 24px}
+label{font-size:12px;font-weight:600;color:#5e6c84;display:block;margin-bottom:6px}
+input{width:100%;padding:10px 12px;border:2px solid #dfe1e6;border-radius:4px;font-size:14px;background:#fafbfc;outline:none;transition:.15s}
+input:focus{border-color:#4c9aff;background:#fff}
+button{margin-top:18px;width:100%;padding:10px;border:0;border-radius:4px;background:#0052cc;color:#fff;font-weight:600;font-size:14px;cursor:pointer}
+button:hover{background:#0065ff}button:disabled{opacity:.6;cursor:default}
+.err{color:#de350b;font-size:13px;margin-top:12px;min-height:18px;text-align:center}
+.foot{margin-top:22px;text-align:center;font-size:11px;color:#97a0af}
+</style></head><body>
+<form class="card" id="f">
+  <div class="logo"><div class="mark">AK</div><div class="brand">Agentic Kanban</div></div>
+  <h1>Sign in to the demo board</h1>
+  <p class="sub">Enter the invite code you were given.</p>
+  <label for="code">Invite code</label>
+  <input id="code" name="code" type="password" autocomplete="current-password" autofocus required>
+  <button id="b" type="submit">Continue</button>
+  <div class="err" id="e"></div>
+  <div class="foot">Demo prototype · Superagent · OpenMausBot · Simular VM</div>
+</form>
+<script>
+document.getElementById('f').addEventListener('submit',async ev=>{
+  ev.preventDefault();const b=document.getElementById('b'),e=document.getElementById('e');b.disabled=true;e.textContent='';
+  try{const r=await fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code:document.getElementById('code').value})});
+    if(r.ok){location.href='/';return}const j=await r.json().catch(()=>({}));e.textContent=j.error||'Sign-in failed';}
+  catch(_){e.textContent='Network error'}b.disabled=false;});
+</script></body></html>

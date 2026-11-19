@@ -46,8 +46,23 @@ permission_gate:
     - '^(npm|pnpm|yarn)\s+(test|run\s+test|run\s+lint)(\s|$)'
     - '^git\s+(status|diff|log|show|add|commit|branch|revert|stash)(\s|$)'
   network:
-    allowed_hosts: [pypi.org, files.pythonhosted.org, registry.npmjs.org, localhost, 127.0.0.1]
-    unknown_host: needs_approval    # URLs to hosts not listed above
+    # Suffix match: a listed host also allows its subdomains
+    # (www.landreg.gov.hk matches landreg.gov.hk; portal.csdi.gov.hk matches csdi.gov.hk
+    # or gov.hk). gov.hk is the durable pattern for official Hong Kong government
+    # open-data portals; it does not open the rest of the internet.
+    allowed_hosts:
+      - pypi.org
+      - files.pythonhosted.org
+      - registry.npmjs.org
+      - localhost
+      - 127.0.0.1
+      - gov.hk
+      - data.gov.hk
+      - landsd.gov.hk
+      - rvd.gov.hk
+      - landreg.gov.hk
+      - csdi.gov.hk
+    unknown_host: needs_approval    # URLs to hosts not listed above; no interactive prompt — use `bin/gate approve-host`
   paths:
     # Absolute paths outside these roots in a command need approval.
     allowed_roots: [WORKSPACE, /tmp, /dev/null, /usr, /bin, /etc/os-release]

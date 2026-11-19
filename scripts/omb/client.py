@@ -12,6 +12,8 @@ import subprocess
 import tempfile
 import urllib.error
 import urllib.request
+from collections import Counter
+from pathlib import Path
 from typing import Any
 
 
@@ -87,7 +89,7 @@ class OpenMausBot:
             raise OMBError(f"send failed (exit {code}): {data or err}")
         return data or {}
 
-    def wait(self, bot_id: str, task_id: str, timeout_s: int = 600) -> dict:
+    def wait(self, bot_id: str, task_id: str, timeout_s: int = 1800) -> dict:
         code, data, err = self._cli(["wait", "--bot", bot_id, "--task", task_id, "--for", "turn",
                                      "--timeout", f"{int(timeout_s)}s", "--on-input", "exit"],
                                     timeout=timeout_s + 60)
@@ -114,3 +116,92 @@ class OpenMausBot:
             elif m.get("kind") == "text" and reply is None:
                 reply = m.get("text")
         return {"reply": reply, "digest": digest}
+
+    @staticmethod
+    def events_path(task_id: str) -> Path:
+        root = Path(os.environ.get("OPENMAUSBOT_HOME") or (Path.home() / ".openmausbot"))
+        return root / "events" / f"{task_id}.ndjson"
+
+    def activity_snapshot(self, bot_id: str, task_id: str) -> dict:
+        """In-progress tool activity for a turn, used when there is no finished text reply yet."""
+        snap = _snapshot_from_events(self.events_path(task_id))
+        try:
+            reply_info = self.last_reply(bot_id, task_id)
+        except Exception:
+            reply_info = {}
+        if reply_info.get("reply") and not snap.get("reply"):
+            snap["reply"] = reply_info["reply"]
+        if reply_info.get("digest") and not snap.get("digest"):
+            snap["digest"] = reply_info["digest"]
+        snap["summary"] = format_activity(snap)
+        snap["fingerprint"] = (
+            f"{snap.get('tool_total', 0)}:{snap.get('latest') or ''}:"
+            f"{int(bool(snap.get('turn_complete')))}:{int(bool(snap.get('reply')))}"
+        )
+        return snap
+
+
+def format_activity(snap: dict) -> str:
+    """Short, secret-free line describing tool activity for the ticket log."""
+    counts = snap.get("tool_counts") or {}
+    total = int(snap.get("tool_total") or sum(counts.values()) or 0)
+    if total and counts:
+        parts = ", ".join(
+            f"{name} ×{n}" for name, n in sorted(counts.items(), key=lambda kv: (-kv[1], kv[0]))
+        )
+        text = f"{total} tools so far ({parts})"
+        if snap.get("latest"):
+            text += f"; latest: {snap['latest']}"
+    elif total:
+        text = f"{total} tools so far"
+    else:
+        text = "no tool calls recorded yet"
+    if snap.get("turn_complete"):
+        text += "; turn finished"
+    elif snap.get("active"):
+        text += "; turn still running"
+    return text
+
+
+def _snapshot_from_events(path: Path) -> dict:
+    counts: Counter[str] = Counter()
+    latest = latest_at = last_text = None
+    turn_complete = False
+    turn_started = False
+    if path.is_file():
+        with path.open(encoding="utf-8", errors="replace") as fh:
+            for line in fh:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    row = json.loads(line)
+                except json.JSONDecodeError:
+                    continue
+                typ = row.get("type")
+                created = row.get("createdAt")
+                if typ == "turn.started":
+                    turn_started = True
+                    turn_complete = False
+                elif typ == "turn.completed":
+                    turn_complete = True
+                elif typ == "item.started" and row.get("itemType") == "tool":
+                    name = (row.get("title") or "tool").strip() or "tool"
+                    if len(name) > 80:
+                        name = name[:77] + "..."
+                    counts[name] += 1
+                    latest, latest_at = name, created
+                elif typ == "item.completed" and row.get("itemType") == "assistant_text":
+                    text = (row.get("text") or "").strip()
+                    if text:
+                        last_text = text
+    total = sum(counts.values())
+    return {
+        "tool_counts": dict(counts),
+        "tool_total": total,
+        "latest": latest,
+        "latest_at": latest_at,
+        "turn_complete": turn_complete,
+        "active": turn_started and not turn_complete,
+        "reply": last_text,
+    }

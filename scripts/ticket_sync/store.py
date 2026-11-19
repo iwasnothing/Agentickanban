@@ -15,6 +15,7 @@ from scripts.ticket_sync import md_utils as md
 EDITABLE_META = {"title", "priority", "labels", "assignee_bot", "github_issue", "github_project_item_id"}
 SECTION_FIELDS = {
     "objective": "Objective",
+    "requirements": "Requirements",
     "context": "Context",
     "acceptance_criteria": "Acceptance Criteria",
     "attachments": "Attachments",
@@ -112,6 +113,7 @@ class TicketStore:
 
     # ---------- API ----------
     def create(self, title: str, objective: str, context: list[str] | str | None = None,
+               requirements: list[str] | str | None = None,
                acceptance_criteria: list[str] | None = None, attachments: list[str] | None = None,
                priority: str = "medium", labels: list[str] | None = None, status: str = "backlog",
                ticket_id: str | None = None) -> dict:
@@ -129,8 +131,10 @@ class TicketStore:
                 n += 1
             stored = self._store_attachments(tid, attachments or [])
             ctx = context if isinstance(context, str) else md.bullet_list(context, empty="- (none)")
+            reqs = requirements if isinstance(requirements, str) else md.bullet_list(requirements, empty="- (none)")
             body = md.build_body({
                 "Objective": objective.strip(),
+                "Requirements": reqs,
                 "Context": ctx,
                 "Acceptance Criteria": md.bullet_list(acceptance_criteria, checkbox=True, empty="- [ ] (to be defined)"),
                 "Attachments": md.bullet_list(stored),
@@ -146,6 +150,110 @@ class TicketStore:
             self._write(path, meta, body)
         extra = self._after(tid, "create", f"tickets: create {tid}")
         return {"ticket_id": tid, "path": str(path.relative_to(self.s.root)), **extra}
+
+    def find_by_github_issue(self, github_issue: int) -> dict | None:
+        """Return a short listing dict for the ticket bound to a GitHub issue number, if any."""
+        try:
+            number = int(github_issue)
+        except (TypeError, ValueError):
+            return None
+        for row in self.list():
+            if row.get("github_issue") == number:
+                return row
+        return None
+
+    def import_github_issue(
+        self,
+        github_issue: int,
+        title: str,
+        objective: str,
+        context: list[str] | str | None = None,
+        acceptance_criteria: list[str] | None = None,
+        priority: str = "medium",
+        labels: list[str] | None = None,
+        status: str = "backlog",
+        github_project_item_id: str | None = None,
+        ticket_id: str | None = None,
+    ) -> dict:
+        """Create (or reuse) a local Markdown ticket bound to an existing GitHub issue.
+
+        Sets github_issue (and optional project item id) before the post-create sync so
+        github_sync updates that issue instead of opening a duplicate. Idempotent.
+        """
+        if not title or not title.strip():
+            raise TicketError("title is required")
+        if priority not in md.PRIORITIES:
+            raise TicketError(f"priority must be one of {md.PRIORITIES}")
+        try:
+            number = int(github_issue)
+        except (TypeError, ValueError) as e:
+            raise TicketError("github_issue must be a positive integer") from e
+        if number <= 0:
+            raise TicketError("github_issue must be a positive integer")
+        status = self._validate_column(status)
+        # Keep from-ui so later ticket_sync_github updates do not drop provenance.
+        # Do not persist awaiting-triage — the poller removes that pickup label.
+        drop = {"awaiting-triage"}
+        clean_labels = []
+        for lab in labels or []:
+            lab = str(lab).strip()
+            if not lab or lab in drop or lab.startswith(("status/", "bot/", "priority/")):
+                continue
+            if lab not in clean_labels:
+                clean_labels.append(lab)
+        if "from-ui" not in clean_labels:
+            clean_labels.append("from-ui")
+
+        with self._lock():
+            existing = None
+            for col in self.s.columns:
+                for pth in (self.s.tickets_dir / col).glob("*.md"):
+                    try:
+                        meta, _ = self._read(pth)
+                    except Exception:
+                        continue
+                    if meta.get("github_issue") == number:
+                        existing = {"ticket_id": meta.get("id") or pth.stem,
+                                    "path": str(pth.relative_to(self.s.root)),
+                                    "status": col}
+                        break
+                if existing:
+                    break
+            if existing:
+                if github_project_item_id:
+                    epath = self.find(existing["ticket_id"])
+                    emeta, ebody = self._read(epath)
+                    if not emeta.get("github_project_item_id"):
+                        emeta["github_project_item_id"] = github_project_item_id
+                        self._write(epath, emeta, ebody)
+                return {**existing, "imported": False, "existing": True}
+
+            base = ticket_id or f"{md.today()}_{md.slugify(title)}"
+            self._validate_id(base)
+            tid, n = base, 2
+            while any((self.s.tickets_dir / c / f"{tid}.md").exists() for c in self.s.columns):
+                tid = f"{base}-{n}"
+                n += 1
+            ctx = context if isinstance(context, str) else md.bullet_list(context, empty="- (none)")
+            body = md.build_body({
+                "Objective": (objective or "").strip() or title.strip(),
+                "Context": ctx,
+                "Acceptance Criteria": md.bullet_list(acceptance_criteria, checkbox=True, empty="- [ ] (to be defined)"),
+                "Attachments": md.bullet_list([]),
+                "Execution Log": "",
+                "Final Review": "- (filled when done)",
+            })
+            meta = {
+                "id": tid, "title": title.strip(), "status": status, "assignee_bot": None,
+                "github_issue": number, "github_project_item_id": github_project_item_id,
+                "priority": priority, "labels": clean_labels,
+                "created_at": md.today(), "updated_at": md.today(),
+            }
+            path = self.s.tickets_dir / status / f"{tid}.md"
+            self._write(path, meta, body)
+        extra = self._after(tid, "import", f"tickets: import github #{number} as {tid}")
+        return {"ticket_id": tid, "path": str(path.relative_to(self.s.root)),
+                "imported": True, "existing": False, **extra}
 
     def _store_attachments(self, tid: str, attachments: list[str]) -> list[str]:
         out = []

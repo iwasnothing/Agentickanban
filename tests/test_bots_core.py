@@ -61,3 +61,70 @@ def test_full_turn(control):
     assert "hello.py" in tree["files"] and "notes.txt" in tree["files"]
     log = st.get(tid)["markdown"]
     assert "## Turn 1 (bot-001)" in log and "## Turn 1 commit (bot-001)" in log
+
+
+def test_send_prompt_logs_progress_instead_of_blank_reply(control):
+    s = load_settings()
+    s.raw.setdefault("openmausbot", {})
+    s.raw["openmausbot"]["progress_log_seconds"] = 1
+    s.raw["openmausbot"]["default_wait_seconds"] = 2
+    s.raw["openmausbot"]["max_wait_seconds"] = 2
+    st = TicketStore(s)
+    tid = st.create("Heavy task", "Do a long research turn")["ticket_id"]
+
+    class FakeBusyOMB(FakeOMB):
+        def wait(self, bot_id, task_id, timeout_s=600):
+            return {"status": "timed-out", "exit_code": 4}
+
+        def last_reply(self, bot_id, task_id):
+            return {"reply": None, "digest": None}
+
+        def activity_snapshot(self, bot_id, task_id):
+            return {
+                "tool_counts": {"execute": 12, "websearch": 3},
+                "tool_total": 15,
+                "latest": "execute",
+                "active": True,
+                "summary": "15 tools so far (execute ×12, websearch ×3); latest: execute; turn still running",
+                "fingerprint": "15:execute:0:0",
+                "reply": None,
+            }
+
+    m = BotManager(s, st, FakeBusyOMB())
+    sess = m.start_session("bot-001", tid)
+    r = m.send_prompt("bot-001", sess["session_id"], "Research and implement")
+    assert r["status"] == "timed-out"
+    log = st.get(tid)["markdown"]
+    assert "Bot reply: (none)" not in log
+    assert "## Turn 1 progress (bot-001)" in log
+    assert "Still working" in log
+    assert "execute ×12" in log and "websearch ×3" in log
+    assert "In-progress activity:" in log
+    assert "No finished text reply yet" in log
+
+
+def test_activity_snapshot_from_events(tmp_path, monkeypatch):
+    from scripts.omb.client import OpenMausBot, _snapshot_from_events, format_activity
+
+    ev = tmp_path / "events"
+    ev.mkdir()
+    path = ev / "task-abc.ndjson"
+    path.write_text(
+        "\n".join([
+            '{"type":"turn.started","createdAt":"2026-11-15T12:13:05.000Z"}',
+            '{"type":"item.started","itemType":"tool","title":"websearch","createdAt":"2026-11-15T12:13:10.000Z"}',
+            '{"type":"item.started","itemType":"tool","title":"execute","createdAt":"2026-11-15T12:13:20.000Z"}',
+            '{"type":"item.started","itemType":"tool","title":"execute","createdAt":"2026-11-15T12:23:11.000Z"}',
+        ]) + "\n"
+    )
+    snap = _snapshot_from_events(path)
+    assert snap["tool_total"] == 3
+    assert snap["tool_counts"] == {"websearch": 1, "execute": 2}
+    assert snap["latest"] == "execute" and snap["active"] is True and not snap["reply"]
+    assert "3 tools so far (execute ×2, websearch ×1); latest: execute; turn still running" == format_activity(snap)
+
+    monkeypatch.setenv("OPENMAUSBOT_HOME", str(tmp_path))
+    omb = OpenMausBot()
+    omb.last_reply = lambda bot_id, task_id: {"reply": None, "digest": None}  # type: ignore
+    live = omb.activity_snapshot("bot", "task-abc")
+    assert live["tool_total"] == 3 and "execute ×2" in live["summary"]

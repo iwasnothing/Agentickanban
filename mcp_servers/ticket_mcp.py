@@ -1,7 +1,7 @@
 """Ticket MCP server (stdio) for the DeepSeek Superagent.
 
 Tools (blueprint `ticket.*`, MCP-legal names with underscores):
-  ticket_create, ticket_get, ticket_update, ticket_move, ticket_assign,
+  ticket_create, ticket_import_github, ticket_get, ticket_update, ticket_move, ticket_assign,
   ticket_add_review_note, ticket_list, ticket_triage, ticket_sync_github
 Prompts: triage, review, gap_analysis (from superagent/prompts/).
 
@@ -42,13 +42,32 @@ def store() -> TicketStore:
 
 @mcp.tool()
 def ticket_create(title: str, objective: str, acceptance_criteria: list[str] | None = None,
+                  requirements: list[str] | str | None = None,
                   context: list[str] | None = None, attachments: list[str] | None = None,
                   priority: Priority = "medium", labels: list[str] | None = None,
                   status: Column = "backlog") -> dict:
     """Create a Markdown ticket (default column: backlog). attachments are file paths on this machine
-    (copied into attachments/<ticket-id>/) or URLs. Returns ticket_id."""
-    return store().create(title=title, objective=objective, context=context, acceptance_criteria=acceptance_criteria,
+    (copied into attachments/<ticket-id>/) or URLs. requirements are specific, testable requirements.
+    Returns ticket_id."""
+    return store().create(title=title, objective=objective, requirements=requirements, context=context,
+                          acceptance_criteria=acceptance_criteria,
                           attachments=attachments, priority=priority, labels=labels, status=status)
+
+
+@mcp.tool()
+def ticket_import_github(github_issue: int, title: str, objective: str,
+                         acceptance_criteria: list[str] | None = None,
+                         context: list[str] | None = None, priority: Priority = "medium",
+                         labels: list[str] | None = None, status: Column = "backlog",
+                         github_project_item_id: str | None = None) -> dict:
+    """Bind a local Markdown ticket to an EXISTING GitHub issue (does not open a second issue).
+    Idempotent: if a ticket already has this github_issue number, it is returned unchanged.
+    Use this for issues created by the Vercel web UI (labels from-ui / awaiting-triage)."""
+    return store().import_github_issue(
+        github_issue=github_issue, title=title, objective=objective,
+        acceptance_criteria=acceptance_criteria, context=context, priority=priority,
+        labels=labels, status=status, github_project_item_id=github_project_item_id,
+    )
 
 
 @mcp.tool()
@@ -59,7 +78,7 @@ def ticket_get(ticket_id: str) -> dict:
 
 @mcp.tool()
 def ticket_update(ticket_id: str, patch: dict) -> dict:
-    """Patch a ticket. Allowed keys: title, priority, labels, assignee_bot, objective, context,
+    """Patch a ticket. Allowed keys: title, priority, labels, assignee_bot, objective, requirements, context,
     acceptance_criteria (list -> checkboxes), attachments, final_review, sections ({heading: markdown}).
     Status cannot be patched: use ticket_move."""
     return store().update(ticket_id, patch)

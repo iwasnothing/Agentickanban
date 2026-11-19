@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
-# Permission gate CLI: gate check --bot bot-001 -- <cmd> | gate approve --bot bot-001 -- <cmd>
+# Permission gate CLI: gate check --bot bot-001 -- <cmd> | gate approve --bot bot-001 -- <cmd> | gate approve-host --bot bot-001 --host HOST
 ROOT="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/.." && pwd)"
 cd "$ROOT" && exec "$ROOT/.venv/bin/python" -m scripts.permission_gate.gate "$@"

@@ -89,5 +89,65 @@ In the demo project worktree, add a times option to greet() in src/demo/greet.py
 - Action: applied by the Superagent worker watchdog.
 - Official acceptance-criteria checkboxes left unchecked. Watchdog does not invent figures or mark Done to clear a stall.
 
+## Watchdog (superagent)
+- Checked at 2026-11-19 20:25 HKT (Asia/Hong_Kong).
+- Stall: permission_gate on bot-001 (pending-approvals: segment 'pip install xlrd -q' needs approval)
+- Decision: resume — Installing well-known data libraries (xlrd) from the default package index with no index/trust flags is low risk.
+- Risk: low
+- Rationale: Installing well-known data libraries (xlrd) from the default package index with no index/trust flags is low risk.
+- Gate: approved — the permission gate now allows this exact request.
+- Action: applied by the Superagent worker watchdog.
+- Official acceptance-criteria checkboxes left unchecked. Watchdog does not invent figures or mark Done to clear a stall.
+
+## Watchdog (superagent)
+- Checked at 2026-11-19 20:25 HKT (Asia/Hong_Kong).
+- Stall: permission_gate on bot-001 (pending-approvals: segment 'pip install plotly -q' needs approval)
+- Decision: resume — Installing well-known data libraries (plotly) from the default package index with no index/trust flags is low risk.
+- Risk: low
+- Rationale: Installing well-known data libraries (plotly) from the default package index with no index/trust flags is low risk.
+- Gate: approved — the permission gate now allows this exact request.
+- Action: applied by the Superagent worker watchdog.
+- Official acceptance-criteria checkboxes left unchecked. Watchdog does not invent figures or mark Done to clear a stall.
+
+## Watchdog (superagent)
+- Checked at 2026-11-19 20:25 HKT (Asia/Hong_Kong).
+- Stall: permission_gate on bot-001 (pending-approvals: segment 'python3 -m pip install plotly -q' needs approval)
+- Decision: resume — Installing well-known data libraries (plotly) from the default package index with no index/trust flags is low risk.
+- Risk: low
+- Rationale: Installing well-known data libraries (plotly) from the default package index with no index/trust flags is low risk.
+- Gate: approved — the permission gate now allows this exact request.
+- Action: applied by the Superagent worker watchdog.
+- Official acceptance-criteria checkboxes left unchecked. Watchdog does not invent figures or mark Done to clear a stall.
+
+## Watchdog (superagent)
+- Checked at 2026-11-19 20:35 HKT (Asia/Hong_Kong).
+- Stall: permission_gate on bot-001 (pending-approvals: segment 'pip install xlrd -q' needs approval)
+- Decision: resume — Installing well-known data libraries (xlrd) from the default package index with no index/trust flags is low risk.
+- Risk: low
+- Rationale: Installing well-known data libraries (xlrd) from the default package index with no index/trust flags is low risk.
+- Gate: approved — the permission gate now allows this exact request.
+- Action: applied by the Superagent worker watchdog.
+- Official acceptance-criteria checkboxes left unchecked. Watchdog does not invent figures or mark Done to clear a stall.
+
+## Watchdog (superagent)
+- Checked at 2026-11-19 20:35 HKT (Asia/Hong_Kong).
+- Stall: permission_gate on bot-001 (pending-approvals: segment 'pip install plotly -q' needs approval)
+- Decision: resume — Installing well-known data libraries (plotly) from the default package index with no index/trust flags is low risk.
+- Risk: low
+- Rationale: Installing well-known data libraries (plotly) from the default package index with no index/trust flags is low risk.
+- Gate: approved — the permission gate now allows this exact request.
+- Action: applied by the Superagent worker watchdog.
+- Official acceptance-criteria checkboxes left unchecked. Watchdog does not invent figures or mark Done to clear a stall.
+
+## Watchdog (superagent)
+- Checked at 2026-11-19 20:35 HKT (Asia/Hong_Kong).
+- Stall: permission_gate on bot-001 (pending-approvals: segment 'python3 -m pip install plotly -q' needs approval)
+- Decision: resume — Installing well-known data libraries (plotly) from the default package index with no index/trust flags is low risk.
+- Risk: low
+- Rationale: Installing well-known data libraries (plotly) from the default package index with no index/trust flags is low risk.
+- Gate: approved — the permission gate now allows this exact request.
+- Action: applied by the Superagent worker watchdog.
+- Official acceptance-criteria checkboxes left unchecked. Watchdog does not invent figures or mark Done to clear a stall.
+
 # Final Review
 - (filled when done)

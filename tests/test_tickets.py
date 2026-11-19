@@ -64,3 +64,26 @@ def test_triage(control):
     assert st.get(tid)["metadata"]["status"] == "to-do"
     tid2 = st.create("Epic: architecture overhaul", "break down the system")["ticket_id"]
     assert triage(st, tid2)["suggested_column"] == "planning"
+
+
+def test_create_stores_requirements(control):
+    st = TicketStore(load_settings())
+    tid = st.create(
+        "HK prices",
+        "Rank district price-per-sqft change",
+        requirements=["Use public sources", "Produce bar charts"],
+        acceptance_criteria=["Ranked table exists", "Charts exist"],
+        context=["Do not invent official statistics"],
+    )["ticket_id"]
+    secs = st.get(tid)["sections"]
+    assert "Use public sources" in secs["Requirements"]
+    assert "Produce bar charts" in secs["Requirements"]
+    assert "Do not invent official statistics" in secs["Context"]
+    ac = st.get(tid)["acceptance_criteria"]
+    assert ac and all(not a["done"] for a in ac)
+
+
+def test_bullet_list_does_not_double_checkboxes():
+    out = md.bullet_list(["- [ ] Already marked", "[ ] Also marked", "plain item"], checkbox=True)
+    lines = out.splitlines()
+    assert lines == ["- [ ] Already marked", "- [ ] Also marked", "- [ ] plain item"]

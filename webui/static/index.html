@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Agentic Kanban · Board</title>
+<style>
+:root{--bg:#f4f5f7;--panel:#fff;--text:#172b4d;--sub:#5e6c84;--muted:#97a0af;--line:#dfe1e6;--blue:#0052cc;--blue2:#0065ff;--blueL:#deebff;--green:#36b37e;--amber:#ffab00;--red:#de350b;--col:#f4f5f7}
+*{box-sizing:border-box}html,body{height:100%}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;font-size:14px;color:var(--text);background:#fff;display:flex}
+a{color:var(--blue);text-decoration:none}a:hover{text-decoration:underline}
+/* sidebar */
+.side{width:232px;flex:none;background:#fafbfc;border-right:1px solid var(--line);display:flex;flex-direction:column;padding:16px 8px}
+.proj{display:flex;gap:10px;align-items:center;padding:4px 8px 18px}
+.proj .mark{width:32px;height:32px;border-radius:6px;background:linear-gradient(135deg,#0052cc,#2684ff);color:#fff;display:grid;place-items:center;font-weight:800;font-size:13px}
+.proj b{display:block;font-size:14px}.proj small{color:var(--sub);font-size:12px}
+.nav a{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:4px;color:var(--text);font-size:14px;margin:1px 0}
+.nav a:hover{background:#ebecf0;text-decoration:none}.nav a.on{background:var(--blueL);color:var(--blue);font-weight:600}
+.nav .h{font-size:11px;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:.04em;margin:18px 10px 6px}
+.side .spacer{flex:1}.side .meta{font-size:11px;color:var(--muted);padding:8px 10px;line-height:1.5}
+/* main */
+.main{flex:1;display:flex;flex-direction:column;min-width:0}
+.top{height:56px;border-bottom:1px solid var(--line);display:flex;align-items:center;padding:0 20px;gap:16px;flex:none}
+.search{flex:0 1 280px;display:flex;align-items:center;gap:6px;border:2px solid var(--line);border-radius:4px;padding:5px 8px;background:#fafbfc}
+.search input{border:0;outline:none;background:transparent;font-size:14px;width:100%}
+.health{display:flex;gap:8px;margin-left:auto;flex-wrap:nowrap}
+.hp{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:16px;padding:4px 12px 4px 8px;background:#fff;cursor:default;position:relative;white-space:nowrap}
+.hp .dot{width:10px;height:10px;border-radius:50%;background:var(--muted);box-shadow:0 0 0 3px rgba(151,160,175,.2)}
+.hp.green .dot{background:var(--green);box-shadow:0 0 0 3px rgba(54,179,126,.2)}.hp.amber .dot{background:var(--amber);box-shadow:0 0 0 3px rgba(255,171,0,.22)}.hp.red .dot{background:var(--red);box-shadow:0 0 0 3px rgba(222,53,11,.2)}
+.hp b{font-size:12px}.hp span{font-size:11px;color:var(--sub)}
+.hp .tip{display:none;position:absolute;top:110%;right:0;z-index:50;width:300px;background:#172b4d;color:#fff;border-radius:4px;padding:10px 12px;font-size:12px;line-height:1.5;white-space:normal;box-shadow:0 4px 12px rgba(0,0,0,.2)}
+.hp:hover .tip{display:block}
+.user{width:32px;height:32px;border-radius:50%;background:#6554c0;color:#fff;display:grid;place-items:center;font-weight:700;font-size:12px;cursor:pointer;flex:none}
+.content{flex:1;overflow:auto;padding:20px 24px 100px}
+.crumb{color:var(--sub);font-size:13px}.crumb a{color:var(--sub)}
+.titlebar{display:flex;align-items:center;gap:12px;margin:6px 0 14px}
+.titlebar h1{font-size:24px;margin:0;font-weight:600;letter-spacing:-.3px}
+.chip{font-size:11px;font-weight:700;padding:2px 6px;border-radius:3px;background:#dfe1e6;color:#42526e;text-transform:uppercase}
+.toolbar{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.avs{display:flex}.avs .av{margin-left:-4px;border:2px solid #fff}
+.btn{border:0;border-radius:3px;padding:6px 12px;font-size:14px;font-weight:500;background:#f4f5f7;color:var(--text);cursor:pointer}
+.btn:hover{background:#ebecf0}.btn.primary{background:var(--blue);color:#fff}.btn.primary:hover{background:var(--blue2)}.btn.on{background:#253858;color:#fff}
+.small{font-size:12px;color:var(--sub)}
+/* board */
+.board{display:grid;grid-template-columns:repeat(6,minmax(210px,1fr));gap:8px;min-width:1300px}
+.colh{background:var(--col);border-radius:4px 4px 0 0;padding:10px 10px 6px;font-size:12px;font-weight:600;color:var(--sub);text-transform:uppercase;letter-spacing:.03em;position:sticky;top:-20px;z-index:3;display:flex;justify-content:space-between}
+.colh.done-c{color:#006644}
+.lane{grid-column:1/-1;display:flex;align-items:center;gap:10px;padding:12px 4px 6px;cursor:pointer;user-select:none}
+.lane .car{color:var(--sub);transition:.15s;font-size:11px}.lane.closed .car{transform:rotate(-90deg)}
+.lane b{font-size:14px}.lane .cnt{font-size:12px;color:var(--sub)}
+.lane .bbadge{font-size:11px;padding:1px 6px;border-radius:3px;background:#e3fcef;color:#006644;font-weight:600}
+.lane .bbadge.off{background:#ffebe6;color:#bf2600}
+.cell{background:var(--col);min-height:84px;padding:6px;display:flex;flex-direction:column;gap:6px}
+.cell.last{border-radius:0 0 4px 4px}
+.card{background:#fff;border-radius:3px;box-shadow:0 1px 1px rgba(9,30,66,.25),0 0 1px rgba(9,30,66,.31);padding:10px 10px 8px;cursor:pointer;transition:background .1s}
+.card:hover{background:#f4f5f7}
+.card.new{animation:pulse 2.4s ease 2}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(0,101,255,.6)}70%{box-shadow:0 0 0 10px rgba(0,101,255,0)}100%{box-shadow:0 1px 1px rgba(9,30,66,.25)}}
+.card .t{font-size:14px;line-height:1.35;margin-bottom:8px;word-break:break-word}
+.labels{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px}
+.lbl{font-size:11px;font-weight:600;padding:1px 6px;border-radius:3px;background:#eae6ff;color:#403294;text-transform:uppercase}
+.lbl:nth-child(3n+2){background:#e3fcef;color:#006644}.lbl:nth-child(3n){background:#fff0b3;color:#172b4d}
+.cf{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--sub)}
+.cf .key{font-weight:600;color:var(--sub)}.cf .key.done{text-decoration:line-through}
+.cf .sp{flex:1}
+.ac{font-size:11px;background:#dfe1e6;border-radius:10px;padding:0 6px;color:#42526e}
+.ac.full{background:#e3fcef;color:#006644}
+.ty{width:16px;height:16px;border-radius:3px;background:#4bade8;display:grid;place-items:center;color:#fff;font-size:10px;font-weight:700}
+.pri{display:inline-flex}
+.av{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;color:#fff;font-size:10px;font-weight:700;flex:none}
+.empty{color:var(--muted);font-size:12px;text-align:center;padding:16px 4px}
+/* drawer */
+.scrim{position:fixed;inset:0;background:rgba(9,30,66,.35);opacity:0;pointer-events:none;transition:.2s;z-index:60}
+.scrim.on{opacity:1;pointer-events:auto}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:620px;max-width:100vw;background:#fff;z-index:61;transform:translateX(100%);transition:transform .25s ease;display:flex;flex-direction:column;box-shadow:-8px 0 24px rgba(9,30,66,.2)}
+.drawer.on{transform:none}
+.dh{display:flex;align-items:center;gap:10px;padding:14px 20px;border-bottom:1px solid var(--line)}
+.dh .x{margin-left:auto;font-size:20px;background:none;border:0;cursor:pointer;color:var(--sub);width:32px;height:32px;border-radius:3px}.dh .x:hover{background:#ebecf0}
+.db{flex:1;overflow:auto;padding:18px 20px 30px;display:grid;grid-template-columns:1fr 200px;gap:24px}
+.db h2{font-size:22px;margin:0 0 16px;font-weight:600;line-height:1.3}
+.db h3{font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--sub);margin:22px 0 8px}
+.prose{white-space:pre-wrap;line-height:1.55;font-size:14px;word-break:break-word}
+.chk{display:flex;gap:8px;align-items:flex-start;padding:4px 0;line-height:1.4}
+.chk .box{width:16px;height:16px;border:2px solid #dfe1e6;border-radius:3px;flex:none;margin-top:1px;display:grid;place-items:center;font-size:11px;color:#fff}
+.chk.on .box{background:var(--blue);border-color:var(--blue)}
+.logi{border-left:2px solid var(--line);padding:2px 0 10px 14px;position:relative}
+.logi:before{content:"";position:absolute;left:-6px;top:4px;width:10px;height:10px;border-radius:50%;background:#fff;border:2px solid var(--blue)}
+.logi b{font-size:13px}.logi div{font-size:13px;color:var(--sub);margin-top:2px;word-break:break-word}
+.fld{margin-bottom:14px}.fld label{display:block;font-size:12px;color:var(--sub);font-weight:600;margin-bottom:4px}
+.status{display:inline-block;font-size:12px;font-weight:700;padding:4px 8px;border-radius:3px;text-transform:uppercase;background:#dfe1e6;color:#42526e}
+.status.s-in-progress,.status.s-planning{background:var(--blueL);color:var(--blue)}.status.s-in-review{background:#eae6ff;color:#403294}.status.s-done{background:#e3fcef;color:#006644}
+/* fab + modal */
+.fab{position:fixed;right:28px;bottom:28px;width:58px;height:58px;border-radius:50%;background:var(--blue);color:#fff;border:0;font-size:32px;line-height:1;cursor:pointer;box-shadow:0 6px 16px rgba(0,82,204,.45);z-index:40;display:grid;place-items:center;transition:.15s}
+.fab:hover{background:var(--blue2);transform:scale(1.06)}
+.fab .lbltip{position:absolute;right:68px;white-space:nowrap;background:#172b4d;color:#fff;font-size:12px;padding:5px 8px;border-radius:3px;opacity:0;pointer-events:none;transition:.15s}.fab:hover .lbltip{opacity:1}
+.modal{position:fixed;inset:0;z-index:70;display:none;align-items:flex-start;justify-content:center;padding-top:8vh;background:rgba(9,30,66,.45)}
+.modal.on{display:flex}
+.mbox{background:#fff;border-radius:6px;width:620px;max-width:94vw;box-shadow:0 12px 32px rgba(9,30,66,.3);max-height:84vh;display:flex;flex-direction:column}
+.mh{padding:20px 24px 4px}.mh h2{margin:0;font-size:20px}.mh p{margin:6px 0 0;color:var(--sub);font-size:13px}
+.mb{padding:12px 24px;overflow:auto}
+.mb label{display:block;font-size:12px;font-weight:600;color:var(--sub);margin:12px 0 4px}
+.mb input,.mb textarea,.mb select{width:100%;border:2px solid var(--line);border-radius:3px;padding:8px 10px;font:inherit;background:#fafbfc;outline:none}
+.mb input:focus,.mb textarea:focus,.mb select:focus{border-color:#4c9aff;background:#fff}
+.mb textarea{resize:vertical;min-height:80px}.mb textarea#fdesc{min-height:180px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.mf{padding:14px 24px 20px;display:flex;gap:8px;justify-content:flex-end;align-items:center}
+.mf .err{color:var(--red);font-size:13px;margin-right:auto}
+.opt{display:flex;gap:8px;align-items:flex-start;margin-top:14px;font-size:13px;color:var(--text)}.opt input{width:auto;margin-top:2px}
+/* toasts + activity */
+.toasts{position:fixed;left:24px;bottom:24px;display:flex;flex-direction:column;gap:8px;z-index:80}
+.toast{background:#172b4d;color:#fff;padding:12px 16px;border-radius:4px;font-size:13px;box-shadow:0 6px 16px rgba(0,0,0,.25);max-width:380px;animation:tin .2s ease}
+.toast.ok{border-left:4px solid var(--green)}.toast.err{border-left:4px solid var(--red)}
+@keyframes tin{from{transform:translateY(12px);opacity:0}}
+.act{border:1px solid var(--line);border-radius:4px;padding:8px 12px;margin-bottom:14px;display:none;gap:10px;align-items:center;font-size:13px;background:#fafbfc}
+.act.on{display:flex}.spin{width:14px;height:14px;border:2px solid #c1c7d0;border-top-color:var(--blue);border-radius:50%;animation:sp 1s linear infinite;flex:none}
+@keyframes sp{to{transform:rotate(360deg)}}
+@media (max-width:900px){.side{display:none}.health span{display:none}}
+</style></head><body>
+<aside class="side">
+  <div class="proj"><div class="mark">AK</div><div><b>Agentic Kanban</b><small>Software project</small></div></div>
+  <nav class="nav">
+    <div class="h">Planning</div>
+    <a class="on" href="#"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="18" rx="1"/><rect x="14" y="3" width="7" height="11" rx="1"/></svg>Board</a>
+    <a href="#" id="navJobs"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>Superagent activity</a>
+    <div class="h">Development</div>
+    <a id="ghRepo" target="_blank" rel="noopener" href="#"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.9a3.4 3.4 0 0 0-.9-2.6c3.1-.3 6.4-1.5 6.4-7A5.4 5.4 0 0 0 20 4.8 5 5 0 0 0 19.9 1S18.7.7 16 2.5a13.4 13.4 0 0 0-7 0C6.3.7 5.1 1 5.1 1A5 5 0 0 0 5 4.8a5.4 5.4 0 0 0-1.5 3.7c0 5.4 3.3 6.6 6.4 7A3.4 3.4 0 0 0 9 18.1V22"/></svg>GitHub issues</a>
+    <a id="ghProj" target="_blank" rel="noopener" href="#"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3h18v18H3zM9 3v18M15 3v18"/></svg>GitHub project</a>
+  </nav>
+  <div class="spacer"></div>
+  <div class="meta">Demo prototype<br>Auto-refresh every 10 s<br><span id="lastSync">—</span></div>
+</aside>
+<div class="main">
+  <header class="top">
+    <div class="search"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5e6c84" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="q" placeholder="Search tickets"></div>
+    <div class="health" id="health"></div>
+    <div class="user" id="userBtn" title="Sign out">IN</div>
+  </header>
+  <div class="content">
+    <div class="crumb"><a href="#">Projects</a> / <a href="#">Agentic Kanban</a></div>
+    <div class="titlebar"><h1>AK board</h1><span class="chip">Swimlanes: bots</span></div>
+    <div class="toolbar">
+      <div class="avs" id="avs"></div>
+      <button class="btn" data-f="all" id="fAll">All</button>
+      <button class="btn" data-f="high">High priority</button>
+      <button class="btn" data-f="open">Open only</button>
+      <span class="small" id="counts"></span>
+    </div>
+    <div class="act" id="act"><div class="spin"></div><div id="actText"></div></div>
+    <div class="board" id="board"></div>
+  </div>
+</div>
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="drawer" aria-hidden="true"><div class="dh" id="dh"></div><div class="db" id="db"></div></aside>
+<button class="fab" id="fab" aria-label="New task for Superagent">+<span class="lbltip">New task for Superagent</span></button>
+<div class="modal" id="modal"><form class="mbox" id="form">
+  <div class="mh"><h2>New task for Superagent</h2><p>Describe the work in a few sentences. Superagent writes the ticket (objective, requirements, acceptance criteria), assigns the worker bot, and runs the loop in the background. The card shows up on the board.</p></div>
+  <div class="mb">
+    <label for="fdesc">High-level task description *</label><textarea id="fdesc" maxlength="4000" required placeholder="What should be done? Superagent will turn this into a full ticket and assign a worker."></textarea>
+  </div>
+  <div class="mf"><span class="err" id="ferr"></span><span class="small" id="fquota"></span><button type="button" class="btn" id="fcancel">Cancel</button><button type="submit" class="btn primary" id="fsubmit">Create</button></div>
+</form></div>
+<div class="toasts" id="toasts"></div>
+<script>
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const COLN={'backlog':'Backlog','to-do':'To do','planning':'Planning','in-progress':'In progress','in-review':'In review','done':'Done'};
+const PALETTE=['#0052cc','#00875a','#6554c0','#ff5630','#00a3bf','#ff8b00','#172b4d'];
+const hue=s=>{let h=0;for(const c of String(s))h=(h*31+c.charCodeAt(0))>>>0;return PALETTE[h%PALETTE.length]};
+const initials=s=>String(s||'?').replace(/[^A-Za-z0-9 ]/g,' ').trim().split(/\s+/).map(w=>w[0]).join('').slice(0,2).toUpperCase()||'?';
+const PRI={high:'<svg width="16" height="16" viewBox="0 0 16 16"><path d="M3 10l5-5 5 5" stroke="#de350b" stroke-width="2.2" fill="none" stroke-linecap="round"/></svg>',
+ medium:'<svg width="16" height="16" viewBox="0 0 16 16"><path d="M3 6h10M3 10h10" stroke="#ff991f" stroke-width="2.2" stroke-linecap="round"/></svg>',
+ low:'<svg width="16" height="16" viewBox="0 0 16 16"><path d="M3 6l5 5 5-5" stroke="#2684ff" stroke-width="2.2" fill="none" stroke-linecap="round"/></svg>'};
+let BOARD=null,FILTER='all',CLOSED=new Set(JSON.parse(localStorage.getItem('akClosed')||'[]')),KNOWN=null,FRESH=new Set(),OPEN_ID=null,WATCH=JSON.parse(localStorage.getItem('akWatch')||'{}');
+async function api(p,o){const r=await fetch(p,Object.assign({credentials:'same-origin'},o||{}));if(r.status===401){location.href='/login';throw new Error('unauthorized')}return r}
+function toast(msg,kind){const t=document.createElement('div');t.className='toast '+(kind||'');t.textContent=msg;$('#toasts').appendChild(t);setTimeout(()=>t.remove(),6000)}
+function ago(ts){const s=Math.max(0,Math.round(Date.now()/1000-ts));return s<60?s+'s ago':Math.round(s/60)+'m ago'}
+
+async function loadBoard(){
+  const r=await api('/api/board');BOARD=await r.json();
+  const ids=new Set(BOARD.tickets.map(t=>t.id));
+  if(KNOWN){for(const id of ids)if(!KNOWN.has(id)){FRESH.add(id);setTimeout(()=>FRESH.delete(id),15000);const t=BOARD.tickets.find(x=>x.id===id);toast('New ticket on the board: '+(t.key||'')+' '+(t.title||''),'ok')}}
+  KNOWN=ids;$('#ghRepo').href='https://github.com/'+BOARD.repo+'/issues';$('#ghProj').href=BOARD.project_url;
+  $('#lastSync').textContent='Updated '+new Date().toLocaleTimeString();render();
+  if(OPEN_ID&&ids.has(OPEN_ID))openTicket(OPEN_ID,true);
+}
+function visible(t){const q=$('#q').value.trim().toLowerCase();
+  if(q&&!(t.title+' '+t.key+' '+(t.labels||[]).join(' ')+' '+t.id).toLowerCase().includes(q))return false;
+  if(FILTER==='high'&&t.priority!=='high')return false;if(FILTER==='open'&&t.status==='done')return false;return true}
+function cardHTML(t,bot){
+  const done=t.status==='done',ac=t.ac_total?`<span class="ac ${t.ac_done===t.ac_total?'full':''}" title="Acceptance criteria">✓ ${t.ac_done}/${t.ac_total}</span>`:'';
+  const av=t.assignee_bot?`<span class="av" style="background:${hue(t.assignee_bot)}" title="${esc(bot?bot.name:t.assignee_bot)}">${esc(initials(bot?(bot.omb_name||bot.name):t.assignee_bot))}</span>`:`<span class="av" style="background:#dfe1e6;color:#5e6c84" title="Unassigned">?</span>`;
+  return `<div class="card ${FRESH.has(t.id)?'new':''}" data-id="${esc(t.id)}"><div class="t">${esc(t.title)}</div>
+  ${(t.labels||[]).length?`<div class="labels">${t.labels.map(l=>`<span class="lbl">${esc(l)}</span>`).join('')}</div>`:''}
+  <div class="cf"><span class="ty" title="Task">✓</span><span class="key ${done?'done':''}">${esc(t.key)}</span><span class="sp"></span>${ac}<span class="pri" title="Priority: ${esc(t.priority)}">${PRI[t.priority]||PRI.medium}</span>${av}</div></div>`}
+function render(){
+  if(!BOARD)return;const b=BOARD,cols=b.columns;const lanes=[...b.bots.map(x=>({id:x.id,name:x.name,sub:x.omb_name?`OpenMausBot · ${x.omb_name}`:'',bot:x})),{id:'__none',name:'Unassigned',sub:'awaiting triage'}];
+  let h=cols.map(c=>{const n=b.tickets.filter(t=>t.status===c&&visible(t)).length;return `<div class="colh ${c==='done'?'done-c':''}"><span>${esc(COLN[c]||c)}</span><span>${n}</span></div>`}).join('');
+  const known=new Set(b.bots.map(x=>x.id));
+  for(const L of lanes){
+    const ts=b.tickets.filter(t=>(L.id==='__none'?!(t.assignee_bot&&known.has(t.assignee_bot)):t.assignee_bot===L.id)&&visible(t));
+    const closed=CLOSED.has(L.id);
+    const avatar=L.bot?`<span class="av" style="background:${hue(L.id)};width:28px;height:28px">${esc(initials(L.bot.omb_name||L.name))}</span>`:`<span class="av" style="background:#dfe1e6;color:#5e6c84;width:28px;height:28px">?</span>`;
+    const badge=L.bot?`<span class="bbadge ${L.bot.enabled?'':'off'}">${L.bot.enabled?'enabled':'disabled'}</span><span class="small">${esc(L.id)} · ${esc(L.bot.model||'')}</span>`:'';
+    h+=`<div class="lane ${closed?'closed':''}" data-lane="${esc(L.id)}"><span class="car">▼</span>${avatar}<b>${esc(L.name)}</b><span class="small">${esc(L.sub)}</span>${badge}<span class="cnt">${ts.length} issue${ts.length===1?'':'s'}</span></div>`;
+    if(!closed)for(const c of cols){const cs=ts.filter(t=>t.status===c);h+=`<div class="cell">${cs.map(t=>cardHTML(t,L.bot)).join('')||''}</div>`}
+  }
+  $('#board').innerHTML=h;
+  const open=b.tickets.filter(t=>t.status!=='done').length;$('#counts').textContent=`${b.tickets.length} tickets · ${open} open · ${b.bots.length} bot${b.bots.length===1?'':'s'}`;
+  $('#avs').innerHTML=b.bots.map(x=>`<span class="av" title="${esc(x.name)}" style="background:${hue(x.id)};width:32px;height:32px">${esc(initials(x.omb_name||x.name))}</span>`).join('')+`<span class="av" title="Unassigned" style="background:#dfe1e6;color:#5e6c84;width:32px;height:32px">?</span>`;
+  document.querySelectorAll('.toolbar .btn').forEach(x=>x.classList.toggle('on',x.dataset.f===FILTER));
+}
+$('#board').addEventListener('click',e=>{const c=e.target.closest('.card');if(c){openTicket(c.dataset.id);return}
+  const l=e.target.closest('.lane');if(l){const id=l.dataset.lane;CLOSED.has(id)?CLOSED.delete(id):CLOSED.add(id);localStorage.setItem('akClosed',JSON.stringify([...CLOSED]));render()}});
+document.querySelectorAll('.toolbar .btn').forEach(x=>x.onclick=()=>{FILTER=x.dataset.f;render()});
+$('#q').oninput=render;
+
+async function openTicket(id,quiet){
+  OPEN_ID=id;const r=await api('/api/tickets/'+encodeURIComponent(id));if(!r.ok){if(!quiet)toast('Could not load ticket','err');return}
+  const d=await r.json(),m=d.meta||{},bot=(BOARD.bots||[]).find(x=>x.id===m.assignee_bot);
+  $('#dh').innerHTML=`<span class="ty">✓</span><span class="small"><b>${esc(d.key)}</b> · ${esc(d.id)}</span>${d.github_url?`<a class="small" target="_blank" rel="noopener" href="${esc(d.github_url)}">Open GitHub issue #${esc(m.github_issue)} ↗</a>`:''}<button class="x" id="dx" aria-label="Close">×</button>`;
+  const ac=(d.acceptance_criteria||[]).map(a=>`<div class="chk ${a.done?'on':''}"><span class="box">${a.done?'✓':''}</span><span>${esc(a.text)}</span></div>`).join('')||'<div class="small">No acceptance criteria.</div>';
+  const lg=(d.log||[]).slice().reverse().map(x=>`<div class="logi"><b>${esc(x.heading)}</b>${x.lines.slice(0,6).map(l=>`<div>${esc(l.length>400?l.slice(0,400)+'…':l)}</div>`).join('')}</div>`).join('')||'<div class="small">No activity yet.</div>';
+  const fr=(d.final_review||'').trim();
+  $('#db').innerHTML=`<div><h2>${esc(m.title||d.id)}</h2>
+   <h3>Objective</h3><div class="prose">${esc(d.objective)}</div>
+   ${d.requirements&&d.requirements.trim()&&d.requirements.trim()!=='- (none)'?`<h3>Requirements</h3><div class="prose">${esc(d.requirements)}</div>`:''}
+   ${d.context&&d.context.trim()&&d.context.trim()!=='- (none)'?`<h3>Context</h3><div class="prose">${esc(d.context)}</div>`:''}
+   <h3>Acceptance criteria</h3>${ac}
+   <h3>Review notes</h3><div class="prose">${esc(fr&&fr!=='- (filled when done)'?fr:'Not reviewed yet.')}</div>
+   <h3>Activity log</h3>${lg}</div>
+   <div><div class="fld"><label>Status</label><span class="status s-${esc(m.status)}">${esc(COLN[m.status]||m.status)}</span></div>
+   <div class="fld"><label>Assignee</label>${m.assignee_bot?`<span style="display:flex;gap:8px;align-items:center"><span class="av" style="background:${hue(m.assignee_bot)}">${esc(initials(bot?(bot.omb_name||bot.name):m.assignee_bot))}</span>${esc(bot?bot.name:m.assignee_bot)}</span>`:'<span class="small">Unassigned</span>'}</div>
+   <div class="fld"><label>Priority</label><span style="display:flex;gap:6px;align-items:center">${PRI[m.priority]||''}${esc(m.priority||'')}</span></div>
+   <div class="fld"><label>Labels</label>${(m.labels||[]).map(l=>`<span class="lbl" style="margin-right:4px">${esc(l)}</span>`).join('')||'<span class="small">None</span>'}</div>
+   <div class="fld"><label>GitHub</label>${d.github_url?`<a target="_blank" rel="noopener" href="${esc(d.github_url)}">#${esc(m.github_issue)}</a>`:'<span class="small">Not synced yet</span>'}</div>
+   <div class="fld"><label>Created</label><span class="small">${esc(m.created_at||'')}</span></div>
+   <div class="fld"><label>Updated</label><span class="small">${esc(m.updated_at||'')}</span></div></div>`;
+  $('#dx').onclick=closeDrawer;$('#drawer').classList.add('on');$('#scrim').classList.add('on');
+}
+function closeDrawer(){OPEN_ID=null;$('#drawer').classList.remove('on');$('#scrim').classList.remove('on')}
+$('#scrim').onclick=closeDrawer;document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeDrawer();$('#modal').classList.remove('on')}});
+
+async function loadHealth(){
+  const r=await api('/api/health');const d=await r.json();
+  $('#health').innerHTML=(d.services||[]).map(s=>`<div class="hp ${esc(s.status)}"><span class="dot"></span><b>${esc(s.name)}</b><span>${s.latency_ms!=null?esc(s.latency_ms)+' ms':''}</span>
+   <div class="tip"><b>${esc(s.name)}</b> — ${esc(({green:'healthy',amber:'degraded / idle',red:'down'})[s.status]||s.status)}<br>${esc(s.sub||'')}<br>${esc(s.detail||'')}<br>Latency: ${s.latency_ms!=null?esc(s.latency_ms)+' ms':'n/a'}<br>Last checked: ${s.checked_at?ago(s.checked_at):'—'}</div></div>`).join('')||'<span class="small">Checking health…</span>';
+}
+async function loadJobs(){
+  const r=await api('/api/jobs');const d=await r.json();const j=(d.jobs||[]).find(x=>x.status==='running'||x.status==='queued');
+  $('#fquota').textContent=`${d.used_this_hour}/${d.limit_per_hour} this hour`;
+  if(j){$('#act').classList.add('on');$('#actText').innerHTML=`<b>Superagent</b> is working on “${esc(j.title)}” — ${esc(j.message||j.stage)}${j.ticket_id?` · ticket <a href="#" data-open="${esc(j.ticket_id)}">${esc(j.ticket_id)}</a>`:''} <span class="small">(${ago(j.created_at)})</span>`}
+  else $('#act').classList.remove('on');
+  for(const x of d.jobs||[]){if(WATCH[x.id]&&x.status!=='running'&&x.status!=='queued'){delete WATCH[x.id];localStorage.setItem('akWatch',JSON.stringify(WATCH));
+    toast(x.status==='done'?`Superagent finished “${x.title}”${x.ticket_id?' → '+x.ticket_id:''}`:`Superagent request failed: ${x.message}`,x.status==='done'?'ok':'err')}}
+}
+$('#act').addEventListener('click',e=>{const a=e.target.closest('[data-open]');if(a){e.preventDefault();openTicket(a.dataset.open)}});
+$('#navJobs').onclick=async e=>{e.preventDefault();const r=await api('/api/jobs');const d=await r.json();
+  const list=(d.jobs||[]).slice(0,5).map(j=>`${new Date(j.created_at*1000).toLocaleString()} · ${j.status} · ${j.title}${j.ticket_id?' → '+j.ticket_id:''}`);toast(list.length?list.join('\n'):'No Superagent requests yet.')};
+
+$('#fab').onclick=()=>{$('#ferr').textContent='';$('#modal').classList.add('on');setTimeout(()=>$('#fdesc').focus(),30);loadJobs()};
+$('#fcancel').onclick=()=>$('#modal').classList.remove('on');
+$('#modal').addEventListener('mousedown',e=>{if(e.target.id==='modal')$('#modal').classList.remove('on')});
+$('#form').addEventListener('submit',async e=>{e.preventDefault();const btn=$('#fsubmit');btn.disabled=true;$('#ferr').textContent='';
+  const body={description:$('#fdesc').value};
+  try{const r=await api('/api/tasks',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});const d=await r.json().catch(()=>({}));
+   if(!r.ok){$('#ferr').textContent=d.error||d.detail||'Request failed'}else{WATCH[d.job_id]=1;localStorage.setItem('akWatch',JSON.stringify(WATCH));
+    $('#modal').classList.remove('on');$('#form').reset();toast('Sent to Superagent — it will write the ticket, assign a worker, and start the loop.','ok');loadJobs()}}
+  catch(_){$('#ferr').textContent='Network error'}btn.disabled=false});
+$('#userBtn').onclick=async()=>{if(confirm('Sign out?')){await fetch('/api/logout',{method:'POST'});location.href='/login'}};
+
+async function tick(){try{await Promise.all([loadBoard(),loadHealth(),loadJobs()])}catch(e){}}
+tick();setInterval(tick,10000);
+</script></body></html>

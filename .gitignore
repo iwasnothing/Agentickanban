@@ -1,10 +1,31 @@
+# Virtualenvs and caches
 .venv/
-.state/
+webui/.venv/
 __pycache__/
 *.pyc
 .pytest_cache/
+.coverage
+htmlcov/
+
+# Runtime state and artifacts (may contain session tokens or UI URLs)
+.state/
+.artifacts/
+
+# Secrets — never commit values, key files, or env files with credentials
 .secrets/
 *.key
 .env
 .env.*
 !.env.example
+
+# Node
+node_modules/
+
+# Tunnel / hosting URL files (the URL may be a live access link)
+kanban-tunnel-url.txt
+kanban-vercel-url.txt
+*tunnel-url.txt
+
+# Local bundles and editor junk
+*.bundle
+.DS_Store

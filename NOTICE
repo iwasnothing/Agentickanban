@@ -1,0 +1,28 @@
+Agentickanban (this repository)
+===============================
+
+This control-plane project is licensed under the MIT License (see LICENSE).
+It is the original work in this repository: Markdown tickets, MCP servers,
+the permission gate, worker watchdog / risk approval, start scripts, and the
+local FastAPI web UI.
+
+Upstream projects are not redistributed here
+--------------------------------------------
+
+This repository does not vendor or relicense the following official projects.
+Operators clone them separately (see SETUP.md). Each remains under its own
+license:
+
+* DeepSeek Harness Superagent prototype
+  https://github.com/deepseek-ai/dsh-superagent-prototype
+  License: MIT
+  This is a research prototype for reference only, not an official DeepSeek
+  product.
+
+* OpenMausBot
+  https://github.com/milind-soni/OpenMausBot
+  License: Apache License 2.0 for the open-source edition, except the
+  `enterprise/` directory, which is source-available under the OpenMausBot
+  Enterprise License (a license carve-out). This control plane uses the
+  open-source / headless path only; it does not require or redistribute
+  `enterprise/`. See OpenMausBot's LICENSE, LICENSING.md, and NOTICE.

@@ -5,7 +5,7 @@ bots:
     name: Backend Python bot
     openmausbot_bot_id: 8a7348b7-596f-4a9a-8c13-fa57a262ceaf   # MausBot (OpenMausBot local server)
     openmausbot_bot_name: MausBot
-    model: opencodeGo/opencode/big-pickle                     # free OpenCode Zen model
+    model: opencodeGo/openrouter/nvidia/nemotron-3-ultra-550b-a55b:free  # OpenRouter free model
     workspace: /workspace/aibots/workspaces/bot-001
     branch: bots/bot-001
     config_dir: bots/bot-001

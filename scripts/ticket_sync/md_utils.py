@@ -22,7 +22,7 @@ FRONT_MATTER_KEYS = [
     "id", "title", "status", "assignee_bot", "github_issue", "github_project_item_id",
     "priority", "labels", "created_at", "updated_at",
 ]
-SECTION_ORDER = ["Objective", "Context", "Acceptance Criteria", "Attachments", "Execution Log", "Final Review"]
+SECTION_ORDER = ["Objective", "Requirements", "Context", "Acceptance Criteria", "Attachments", "Execution Log", "Final Review"]
 PRIORITIES = ["high", "medium", "low"]
 
 _FM_RE = re.compile(r"\A---\s*\n(.*?)\n---\s*\n?", re.S)
@@ -136,6 +136,7 @@ def bullet_list(items: list[str] | None, checkbox: bool = False, empty: str = "-
         return empty
     def line(i: str) -> str:
         i = str(i).strip()
+        i = re.sub(r"^[-*]\s+", "", i)  # Superagent often already includes a markdown bullet
         if checkbox and re.match(r"^\[[ xX]\]\s", i):
             return "- " + i  # already carries its checkbox state
         return ("- [ ] " if checkbox else "- ") + i

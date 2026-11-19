@@ -1,0 +1,93 @@
+# Example DeepSeek Harness profile patch for Agentic Kanban.
+#
+# After you follow the official dsh-superagent install
+# (dsh-superagent-prototype/docs/006-deployment.md):
+#   1. Back up ~/.dsh/profiles/superagent/cordis.patch.yml if it already exists.
+#   2. Copy this file to ~/.dsh/profiles/superagent/cordis.patch.yml
+#      (or merge the OpenRouter + MCP blocks into the existing patch).
+#   3. Replace every /path/to/... placeholder with absolute paths on this machine.
+#   4. Do NOT put API keys, tokens, or invite codes in this file.
+#      The OpenRouter key is read from the environment (apiKeyEnv below).
+#   5. Never re-run `dsh superagent --from-default-profile` on an existing
+#      profile: that command replaces the profile and deletes this file.
+#
+# Environment used at DSH start (see scripts/start_dsh_superagent.sh):
+#   OPENROUTER_KANBAN_API_KEY  (and OPENROUTER_API_KEY as a copy)
+#   AIBOTS_CONTROL_ROOT, GITHUB_REPO, GITHUB_PROJECT, OMB_PORT
+#
+# Suggested sibling layout (see SETUP.md):
+#   /path/to/kanban/Agentickanban              # this control-plane repo
+#   /path/to/kanban/dsh-superagent-prototype   # official, pinned SHA
+#   /path/to/kanban/OpenMausBot                # official, pinned SHA
+
+- id: webserver
+  config:
+    host: 127.0.0.1
+    port: 3082
+- id: dsh-superagent
+  config:
+    stateDir: /path/to/home/.dsh/state/superagent
+- id: llm-pi-ai
+  config:
+    providers:
+      openrouter:
+        displayName: OpenRouter
+        apiKeyEnv: OPENROUTER_KANBAN_API_KEY
+        api: openai-completions
+        baseURL: https://openrouter.ai/api/v1
+        models:
+          - id: nvidia/nemotron-3-ultra-550b-a55b:free
+
+# Official MCP client: Superagent sessions can call OpenMausBot's native
+# stdio MCP server (`openmausbot mcp`). Put the `openmausbot` binary on PATH
+# or use its absolute path.
+- insert:
+    - id: mcp-openmausbot
+      name: '@deepseek-ai/dsh-mcp-client'
+      config:
+        serverName: openmausbot
+        transport: stdio
+        command: /path/to/home/.local/bin/openmausbot
+        args:
+          - mcp
+        env:
+          OMB_PORT: "8799"
+        failOnStartupError: false
+        # Must cover bot turns / send_bot_message waits up to max_wait_seconds (3600s) plus margin.
+        toolCallTimeoutMs: 3900000
+    # Ticket MCP + Kanban-bots MCP (bot_* tools) from this control-plane repo.
+    - id: mcp-kanban-tickets
+      name: '@deepseek-ai/dsh-mcp-client'
+      config:
+        serverName: kanban-tickets
+        transport: stdio
+        command: /path/to/Agentickanban/scripts/start_kanban_mcp.sh
+        args:
+          - ticket_mcp.py
+        env:
+          AIBOTS_CONTROL_ROOT: /path/to/Agentickanban
+          GITHUB_REPO: owner/repo
+          GITHUB_PROJECT: owner/NUMBER
+        failOnStartupError: false
+        # GitHub issue sync can be slow; 5 minutes is enough for ticket tools.
+        toolCallTimeoutMs: 300000
+    - id: mcp-kanban-bots
+      name: '@deepseek-ai/dsh-mcp-client'
+      config:
+        serverName: kanban-bots
+        transport: stdio
+        command: /path/to/Agentickanban/scripts/start_kanban_mcp.sh
+        args:
+          - bots_mcp.py
+        env:
+          AIBOTS_CONTROL_ROOT: /path/to/Agentickanban
+          GITHUB_REPO: owner/repo
+          GITHUB_PROJECT: owner/NUMBER
+        failOnStartupError: false
+        # bot_send_prompt may wait up to openmausbot.max_wait_seconds (3600s).
+        toolCallTimeoutMs: 3900000
+- id: agent-default-model
+  name: "@deepseek-ai/dsh-agent-default-model"
+  config:
+    provider: openrouter
+    model: nvidia/nemotron-3-ultra-550b-a55b:free

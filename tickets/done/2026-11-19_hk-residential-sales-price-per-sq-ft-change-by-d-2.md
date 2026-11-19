@@ -182,5 +182,29 @@ Collect public Hong Kong residential sales transaction data, compute year-over-y
 - [x] Code is modular, documented, and reproducible (pipeline scripts in `analysis/hk-residential-prices-20261119/`)
 - **All 9 acceptance criteria met.** Ready for in-review.
 
+## Turn 2 (bot-001)
+- Prompt sent at 2026-11-19 20:25 (session 03e628e1-b954-4852-b137-3d6c5a044f07)
+- Prompt: The command `pip install xlrd -q` is already allowed. Do not wait for an approval prompt. OpenMausBot is non-interactive: no approval prompt will appear. Continue the EXISTING ticket work now. Do not
+
+## Turn 3 (bot-001)
+- Prompt sent at 2026-11-19 20:25 (session 03e628e1-b954-4852-b137-3d6c5a044f07)
+- Prompt: The command `pip install plotly -q` is already allowed. Do not wait for an approval prompt. OpenMausBot is non-interactive: no approval prompt will appear. Continue the EXISTING ticket work now. Do no
+
+## Turn 4 (bot-001)
+- Prompt sent at 2026-11-19 20:25 (session 03e628e1-b954-4852-b137-3d6c5a044f07)
+- Prompt: The command `python3 -m pip install plotly -q` is already allowed. Do not wait for an approval prompt. OpenMausBot is non-interactive: no approval prompt will appear. Continue the EXISTING ticket work
+
+## Turn 5 (bot-001)
+- Prompt sent at 2026-11-19 20:35 (session 03e628e1-b954-4852-b137-3d6c5a044f07)
+- Prompt: The command `pip install xlrd -q` is already allowed. Do not wait for an approval prompt. OpenMausBot is non-interactive: no approval prompt will appear. Continue the EXISTING ticket work now. Do not
+
+## Turn 6 (bot-001)
+- Prompt sent at 2026-11-19 20:35 (session 03e628e1-b954-4852-b137-3d6c5a044f07)
+- Prompt: The command `pip install plotly -q` is already allowed. Do not wait for an approval prompt. OpenMausBot is non-interactive: no approval prompt will appear. Continue the EXISTING ticket work now. Do no
+
+## Turn 7 (bot-001)
+- Prompt sent at 2026-11-19 20:35 (session 03e628e1-b954-4852-b137-3d6c5a044f07)
+- Prompt: The command `python3 -m pip install plotly -q` is already allowed. Do not wait for an approval prompt. OpenMausBot is non-interactive: no approval prompt will appear. Continue the EXISTING ticket work
+
 # Final Review
 - (filled when done)

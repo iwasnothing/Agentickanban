@@ -51,3 +51,51 @@ def test_paths(gate):
 def test_split():
     assert split_segments("a && b || c; d | e 2>&1") == ["a", "b", "c", "d", "e 2>&1"]
     assert split_segments("echo 'a && b'") == ["echo 'a && b'"]
+
+
+
+def test_official_hk_gov_hosts_allowed(gate):
+    """gov.hk (and listed children) suffix-match official HK government open-data hosts."""
+    for cmd in (
+        "curl https://www.landreg.gov.hk/datagovhk/202610_data.json",
+        "curl https://portal.csdi.gov.hk/geoportal/",
+        "curl https://data.gov.hk/en-data/api/3/action/package_search?q=EPRC",
+        "curl https://www.landsd.gov.hk/en/open-data.html",
+        "curl https://www.rvd.gov.hk/doc/en/statistics/his_data_2.xls",
+    ):
+        d = gate.check(cmd)
+        assert d.decision == "allow", (cmd, d.decision, d.reason)
+
+
+def test_unknown_host_is_non_interactive(gate):
+    d = gate.check("curl https://unknown.example/api")
+    assert d.decision == "needs_approval"
+    assert "unknown host unknown.example" in d.reason
+    assert "non-interactive" in d.reason
+    assert "Do not wait" in d.reason
+    assert "approve-host" in d.reason
+    assert "unknown.example" in d.reason
+
+
+def test_approve_host_unblocks_future_calls(gate, control):
+    cmd = "curl https://open-data.example.gov/file.json"
+    assert gate.check(cmd).decision == "needs_approval"
+    rec = gate.approve_host("open-data.example.gov")
+    assert rec["host"] == "open-data.example.gov"
+    d = gate.check(cmd)
+    assert d.decision == "allow"
+    # subdomains of an approved host are also allowed
+    assert gate.check("curl https://www.open-data.example.gov/x").decision == "allow"
+    # too-broad names are rejected
+    import pytest
+    with pytest.raises(ValueError):
+        gate.approve_host("com")
+    with pytest.raises(ValueError):
+        gate.approve_host("hk")
+
+
+def test_pending_approval_is_recorded(gate, control):
+    gate.audit(gate.check("curl https://blocked.example/data"), "test")
+    pending = (control["state"] / "pending-approvals.jsonl").read_text()
+    assert "blocked.example" in pending
+    assert "approve-host" in pending

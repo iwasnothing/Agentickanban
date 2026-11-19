@@ -1,8 +1,8 @@
 # Superagent (manager)
 
-DeepSeek Superagent (DSH, `/workspace/dsh-superagent-prototype`, profile
+DeepSeek Superagent (DSH, official `dsh-superagent-prototype` checkout, profile
 `~/.dsh/profiles/superagent/cordis.patch.yml`) is the manager. It reaches the
-system only through MCP:
+system only through MCP. Install and profile wiring: see the top-level [SETUP.md](../SETUP.md).
 
 | MCP server | DSH tool prefix | Purpose |
 |---|---|---|

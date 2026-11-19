@@ -1,0 +1,10 @@
+# Local FastAPI board (scripts/start_kanban_webui.sh).
+# Install into webui/.venv — do not reuse a different Python than the control-plane
+# venv if you prefer isolation; this app also imports scripts/ from the repo root.
+fastapi>=0.162
+uvicorn>=0.32
+httpx>=0.28
+pyyaml>=6
+mcp>=1.10,<2
+itsdangerous>=2.2
+python-multipart>=0.0.20

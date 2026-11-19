@@ -52,9 +52,12 @@ def bot_start_session(bot_id: str, ticket_id: str) -> dict:
 
 
 @mcp.tool()
-def bot_send_prompt(bot_id: str, session_id: str, prompt: str, wait: bool = True, timeout_seconds: int = 600) -> dict:
+def bot_send_prompt(bot_id: str, session_id: str, prompt: str, wait: bool = True, timeout_seconds: int | None = None) -> dict:
     """Send a prompt (one action turn) to the bot. With wait=true (default) blocks until the turn ends and
-    returns status (done | failed | needs-user | timed-out), the bot's reply and a tool-activity digest."""
+    returns status (done | failed | needs-user | timed-out), the bot's reply and a tool-activity digest.
+    timeout_seconds defaults to openmausbot.default_wait_seconds (30 minutes) and may be extended up to
+    max_wait_seconds while the bot is still using tools. The ticket log records in-progress tool activity
+    instead of a blank reply if the wait ends before a finished text message arrives."""
     return mgr().send_prompt(bot_id, session_id, prompt, wait=wait, timeout_s=timeout_seconds)
 
 
@@ -111,3 +114,15 @@ def bot_run_tests(bot_id: str, session_id: str | None = None, test_cmd: str | No
 
 if __name__ == "__main__":
     mcp.run()
+
+
+@mcp.tool()
+def bot_watchdog_check(bot_id: str | None = None, apply: bool = True) -> dict:
+    """Inspect every configured worker (or one bot) for stalls — host-permission waits,
+    other permission-gate needs_approval, or hung/no-progress turns — and optionally
+    apply Superagent's decision (allow official/safe hosts and resume, deny inappropriate
+    hosts and fail clearly, or record a reasoned note). Never ticks official AC boxes
+    or marks a ticket Done just to clear a stall. Interval and safe suffixes come from
+    superagent/config/superagent.yaml (watchdog)."""
+    from scripts.bots.watchdog import WorkerWatchdog
+    return WorkerWatchdog().run_once(apply=apply, bot_id=bot_id)

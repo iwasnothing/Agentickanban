@@ -20,3 +20,21 @@ After every bot turn the superagent MUST:
 
 Security: never paste secrets into tickets or prompts; the permission gate is
 authoritative for commands, even ones the superagent requests.
+
+## Pending approvals and the permission gate
+
+The permission gate is authoritative. After a worker `needs_approval` stall
+(including pip install, unknown hosts, and other pending requests):
+
+- Use the watchdog risk assessment (or `bot_watchdog_check`) rather than inventing
+  an approval. Low-risk requests may be approved only if the gate actually records
+  the approval. High-risk requests are rejected with a counter-proposal.
+- **Never tell the worker that a command, host, or package install "has been
+  approved" unless the permission gate actually approved it.** A Watchdog log
+  that says `Decision: note`, `Decision: reject`, or `Decision: deny`, or
+  `Gate: not approved`, means it was **not** approved. Do not invent an
+  approval to unblock a stall (this was the issue #10 briefing lie).
+- Do not invent figures, copy leftover artifacts and call them fresh official
+  results, tick official acceptance-criteria checkboxes, or mark Done just to
+  clear a stall. Do not auto-buy or log in to paid/login-walled sources.
+

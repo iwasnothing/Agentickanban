@@ -1,5 +1,12 @@
 # DeepSeek Superagent (manager) configuration for the Kanban bots system.
-# Paths are absolute on this box. Secrets are NEVER stored here: only env var names.
+# Secrets are NEVER stored here: only env var names.
+#
+# The paths below are the reference-box defaults. On another machine, either
+# edit them or set environment variables (env wins for the roots listed):
+#   AIBOTS_CONTROL_ROOT, AIBOTS_PROJECT_REPO, AIBOTS_WORKSPACES_ROOT,
+#   AIBOTS_STATE_DIR, GITHUB_REPO, GITHUB_PROJECT, GITHUB_TOKEN
+# Also edit openmausbot.cli so it points at your `openmausbot` binary.
+# See SETUP.md and .env.example.
 
 paths:
   control_repo: /workspace/ai-bot-system
@@ -16,7 +23,9 @@ tickets:
 openmausbot:
   url: http://127.0.0.1:8799   # local OpenMausBot server (openmausbot serve --local)
   cli: /home/box/.local/bin/openmausbot
-  default_wait_seconds: 600    # how long bot.send_prompt waits for the bot's turn to finish
+  default_wait_seconds: 1800   # how long bot.send_prompt waits for the bot's turn to finish (30 min)
+  max_wait_seconds: 3600       # keep waiting past the default while the bot is still using tools (up to 60 min)
+  progress_log_seconds: 60     # append in-progress tool activity to the ticket log this often
 
 github:
   # Non-secret targets may live here. The token itself is NEVER stored in git.
@@ -36,3 +45,20 @@ loop:
   max_iterations_per_ticket: 3   # review -> follow-up prompt cycles before escalating to a human
   require_tests_green: true
   human_review_column: in-review # set to "done" to skip human approval
+
+
+# Superagent worker watchdog: periodically inspect every configured bot for stalls
+# (host-permission waits, permission-gate blocks, hung/no-progress turns) and decide
+# how to unblock them. Official AC boxes stay unchecked; never mark Done just to clear a stall.
+watchdog:
+  enabled: true
+  interval_seconds: 60          # 1 minute while the supervisor is running (30–120s is the loop clamp)
+  no_progress_seconds: 240      # "still working" with no new tools for this long
+  hung_seconds: 720             # turn appears running but silent for this long
+  pending_lookback_seconds: 1800
+  safe_host_suffixes: [gov.hk]  # official HK government open-data (suffix match, not the whole internet)
+  auto_apply: true
+  resume_on_allow: true
+  redirect_on_source_failure: true
+  redirect_columns: [in-progress]  # do not auto-brief in-review/done (e.g. after Superagent already reviewed)
+  assess_pending_risk: true        # approve low-risk pending requests; reject others with a counter-proposal

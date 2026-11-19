@@ -7,6 +7,7 @@ whose working folder is the worktree. Turn bookkeeping lives in .state/sessions.
 from __future__ import annotations
 
 import json
+import time
 import os
 import shutil
 import subprocess
@@ -15,8 +16,8 @@ from datetime import datetime
 from pathlib import Path
 
 from scripts.config import Settings, load_settings
-from scripts.omb.client import OpenMausBot
-from scripts.permission_gate.gate import PermissionGate, redact, scrubbed_env
+from scripts.omb.client import OpenMausBot, format_activity
+from scripts.permission_gate.gate import PermissionGate, UNKNOWN_HOST_RE, normalize_host, redact, scrubbed_env
 from scripts.ticket_sync import md_utils as md
 from scripts.ticket_sync.store import TicketStore
 
@@ -170,22 +171,84 @@ class BotManager:
                             "Prompt: " + prompt.strip().splitlines()[-1][:200] if prompt.strip() else ""], sync=False)
         out = {"session_id": session_id, "turn": turn, "receipt": receipt}
         if wait:
-            res = self.omb.wait(sess["openmausbot_bot_id"], session_id,
-                                timeout_s or int(self.s.omb.get("default_wait_seconds", 600)))
-            out["status"] = res["status"]
+            omb_id = sess["openmausbot_bot_id"]
+            cfg = self.s.omb
+            slice_s = max(1, int(cfg.get("progress_log_seconds", 60)))
+            base_s = int(timeout_s if timeout_s is not None else cfg.get("default_wait_seconds", 1800))
+            max_s = max(base_s, int(cfg.get("max_wait_seconds", 3600)))
+            started = time.monotonic()
+            last_fp = None
+            res: dict = {"status": "timed-out", "exit_code": 4}
+            while True:
+                remaining = max_s - (time.monotonic() - started)
+                if remaining <= 0:
+                    break
+                wait_for = max(1, int(min(slice_s, remaining)))
+                slice_started = time.monotonic()
+                try:
+                    res = self.omb.wait(omb_id, session_id, timeout_s=wait_for)
+                except Exception as e:
+                    res = {"status": "failed", "exit_code": 1, "stderr": str(e)}
+                    break
+                status = res.get("status")
+                if status in ("done", "failed", "needs-user"):
+                    break
+                # If wait() returned early (tests or a CLI glitch), do not spin the log loop.
+                leftover = wait_for - (time.monotonic() - slice_started)
+                if leftover > 0.05:
+                    time.sleep(min(leftover, max(0, max_s - (time.monotonic() - started))))
+                elapsed = time.monotonic() - started
+                snap = self._activity_snapshot(omb_id, session_id)
+                activity = format_activity(snap) if snap else "turn still running"
+                fp = snap.get("fingerprint") or activity
+                if fp == last_fp:
+                    line = f"Still working at {md.now_stamp()} ({int(elapsed)}s elapsed): no new tool activity; {activity}."
+                else:
+                    line = f"Still working at {md.now_stamp()} ({int(elapsed)}s elapsed): {activity}."
+                self.store.add_log(sess["ticket_id"], f"Turn {turn} progress ({bot_id})",
+                                   [line], sync=False)
+                last_fp = fp
+                # After the default wait, stop if the turn has gone idle (no longer active).
+                if elapsed >= base_s and snap and not snap.get("active"):
+                    break
+                if time.monotonic() - started >= max_s:
+                    break
+            out["status"] = res.get("status") or "timed-out"
             if res.get("stderr"):
                 out["detail"] = redact(res["stderr"])[-1000:]
+            snap = self._activity_snapshot(omb_id, session_id)
             try:
-                out.update(self.omb.last_reply(sess["openmausbot_bot_id"], session_id))
+                out.update(self.omb.last_reply(omb_id, session_id))
             except Exception as e:
                 out["reply_error"] = str(e)
+            if snap:
+                out["activity"] = snap.get("summary") or format_activity(snap)
+                if snap.get("reply") and not (out.get("reply") or "").strip():
+                    out["reply"] = snap["reply"]
             reply = (out.get("reply") or "").strip().replace("\n", " ")
-            self.store.add_log(sess["ticket_id"], f"Turn {turn} result ({bot_id})",
-                               [f"Status: {out['status']} at {md.now_stamp()}",
-                                f"Bot reply: {reply[:300]}" if reply else "Bot reply: (none)"], sync=False)
+            elapsed = time.monotonic() - started
+            result_lines = [f"Status: {out['status']} at {md.now_stamp()} ({int(elapsed)}s elapsed)"]
+            if reply:
+                result_lines.append(f"Bot reply: {reply[:300]}")
+            elif snap and (snap.get("tool_total") or snap.get("active") or snap.get("summary")):
+                result_lines.append(f"In-progress activity: {out.get('activity') or format_activity(snap)}.")
+                if out["status"] == "timed-out":
+                    result_lines.append("No finished text reply yet; the turn was still running when the wait ended.")
+            else:
+                result_lines.append("No tool activity or text reply recorded.")
+            self.store.add_log(sess["ticket_id"], f"Turn {turn} result ({bot_id})", result_lines, sync=False)
         else:
             out["status"] = "dispatched"
         return out
+
+    def _activity_snapshot(self, omb_id: str, session_id: str) -> dict:
+        fn = getattr(self.omb, "activity_snapshot", None)
+        if not callable(fn):
+            return {}
+        try:
+            return fn(omb_id, session_id) or {}
+        except Exception:
+            return {}
 
     def get_session_status(self, bot_id: str, session_id: str) -> dict:
         sess = self._session(bot_id, session_id)
@@ -290,9 +353,26 @@ class BotManager:
         d = gate.check(cmd, gate.workspace)
         gate.audit(d, source)
         if not d.allowed:
+            hint = None
+            if d.decision == "needs_approval":
+                host = None
+                if d.reason:
+                    m = UNKNOWN_HOST_RE.search(d.reason)
+                    if m:
+                        host = normalize_host(m.group(1))
+                if host:
+                    hint = (
+                        "This environment is non-interactive (no approval prompt will appear). "
+                        f"A human can allow the host with: bin/gate approve-host --bot {bot_id} --host {host} "
+                        f"(or approve this exact command with: python -m scripts.permission_gate.gate approve --bot {bot_id} -- '{cmd}')"
+                    )
+                else:
+                    hint = (
+                        "This environment is non-interactive (no approval prompt will appear). "
+                        f"A human can approve with: python -m scripts.permission_gate.gate approve --bot {bot_id} -- '{cmd}'"
+                    )
             return {"status": "blocked" if d.decision == "deny" else "needs_approval", "decision": d.to_dict(),
-                    "hint": "a human can approve with: python -m scripts.permission_gate.gate approve --bot "
-                            f"{bot_id} -- '{cmd}'" if d.decision == "needs_approval" else None}
+                    "hint": hint}
         cfg = self.s.sandbox_config(bot_id)
         timeout = timeout or int(cfg.get("command_timeout_seconds", 300))
         try:
