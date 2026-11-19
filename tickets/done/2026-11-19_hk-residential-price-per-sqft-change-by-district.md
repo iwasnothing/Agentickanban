@@ -1,7 +1,7 @@
 ---
 id: 2026-11-19_hk-residential-price-per-sqft-change-by-district
 title: HK Residential Price-per-Sqft Change by District (Last 2 Years) with Bar Chart Visualization
-status: in-review
+status: done
 assignee_bot: bot-001
 github_issue: 10
 github_project_item_id: PVTI_lAHOAlPnVM4BrZECzhKA5JE
