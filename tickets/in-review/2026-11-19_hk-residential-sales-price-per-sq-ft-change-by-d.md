@@ -145,5 +145,17 @@ Collect public Hong Kong residential transaction data from the Land Registry EPR
 - **Note**: The RVD data used provides prices by **broad area** (HK Island, Kowloon, New Territories) and **size class** (A-E), not by the 18 District Council districts. The ranked_changes.csv appears to impute district-level values from these broader aggregates. This is a known limitation of the public data — RVD does not publish residential transaction prices at the 18-district level. The Simular box cb-00a9be6c1672 was used for fetching and computation.
 - Official acceptance-criteria checkboxes remain unchecked (human-in-the-loop).
 
+## Permission gate fix (operator)
+- Documented at 2026-11-19 08:30 HKT (Asia/Hong_Kong).
+- Cause of the last stall (Turn 4, 01:32–01:36 HKT): the permission gate blocked worker curls to www.landreg.gov.hk and portal.csdi.gov.hk because those hosts were not in bot-001 allowed_hosts (data.gov.hk, landsd.gov.hk, and rvd.gov.hk already were). Host matching is exact-or-subdomain, so www.landreg.gov.hk does not match landsd.gov.hk.
+- This was not a hang inside the gate: OpenMausBot has no interactive approval card. needs_approval throws immediately, but the error told the worker to wait for a human prompt that never arrives, and Superagent has no tool to approve a host (approvals were per exact command). The turn ended asking for approval; leftover 15 Nov / 00:33 files in analysis/hk-residential-prices/ were not new official deliverables.
+- Fix: added gov.hk as a durable official-HK-government suffix (also listed landreg.gov.hk and csdi.gov.hk) in bots/bot-001/sandbox.config.yaml. The gate already treats a listed host as allowing its subdomains, so www.landreg.gov.hk and portal.csdi.gov.hk are now allowed. The rest of the internet stays closed.
+- Also added bin/gate approve-host --bot <bot> --host <host> (stored in .state/approved-hosts.json) and .state/pending-approvals.jsonl so a future unknown host fails clearly with a non-interactive resolution path instead of stalling. Plugin / bot_run_command hints now say no approval prompt will appear; do not wait; report the host and stop that network step.
+- OpenMausBot was not restarted: sandbox.config.yaml is re-read on every gate check. Official acceptance-criteria checkboxes remain unchecked. No figures from leftover files should be treated as confirmed official statistics.
+
+## Turn 4 Review (superagent)
+- Reviewed at 2026-11-19 08:26
+- Resuming ticket. The permission gate now allows official HK government open-data hosts including www.landreg.gov.hk and portal.csdi.gov.hk (durable suffix gov.hk plus explicit landreg.gov.hk and csdi.gov.hk). Leftover files from 15 Nov in analysis/hk-residential-prices/ and the 00:33 HKT PNG are NOT new official deliverables and must be ignored. I will now send one worker brief to fetch public Hong Kong residential figures for the most recent two years only from official sources (www.landreg.gov.hk, portal.csdi.gov.hk, data.gov.hk, landsd.gov.hk, rvd.gov.hk), compute price-per-square-foot change by district, sort highest rise to highest drop, and write FRESH bar-chart PNG(s) plus a ranked CSV into a new directory such as analysis/hk-residential-prices-20261119/. I will not search datasets myself.
+
 # Final Review
 - (filled when done)
